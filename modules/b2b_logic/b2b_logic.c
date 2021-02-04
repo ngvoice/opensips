@@ -87,7 +87,7 @@ int b2b_handle_reply(struct sip_msg* msg);
 int b2b_pass_request(struct sip_msg *msg);
 int b2b_delete_entity(struct sip_msg *msg);
 int b2b_end_dlg_leg(struct sip_msg *msg);
-int b2b_send_reply(struct sip_msg *msg, int *code, str *reason);
+int b2b_send_reply(struct sip_msg *msg, int *code, str *reason, str *headers, str *body);
 int b2b_scenario_bridge(struct sip_msg *msg, str *br_ent1, str *br_ent2,
 	str *provmedia_uri, int *lifetime);
 int  b2b_bridge_request(struct sip_msg* msg, str *key, int *entity_no);
@@ -202,7 +202,9 @@ static cmd_export_t cmds[]=
 		REQUEST_ROUTE},
 	{"b2b_send_reply",(cmd_function)b2b_send_reply, {
 		{CMD_PARAM_INT,0,0},
-		{CMD_PARAM_STR,0,0}, {0,0,0}},
+		{CMD_PARAM_STR,0,0},
+		{CMD_PARAM_STR|CMD_PARAM_OPT,0,0},
+		{CMD_PARAM_STR|CMD_PARAM_OPT,0,0},{0,0,0}},
 		REQUEST_ROUTE},
 	{"b2b_bridge", (cmd_function)b2b_scenario_bridge, {
 		{CMD_PARAM_STR,0,0},
