@@ -106,6 +106,7 @@ extern int b2bl_db_mode;
 extern unsigned int b2bl_th_init_timeout;
 extern int global_req_rtid;
 extern int global_reply_rtid;
+extern int b2b_early_update;
 
 extern str top_hiding_scen_s;
 extern str internal_scen_s;

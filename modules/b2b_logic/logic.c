@@ -81,6 +81,7 @@ int post_cb_sanity_check(b2bl_tuple_t **tuple, unsigned int hash_index, unsigned
 			b2bl_entity_id_t **entity, int etype, str *ekey);
 int udh_to_uri(str user, str host, str port, str* uri);
 static str method_invite= {INVITE, INVITE_LEN};
+static str method_update= {UPDATE, UPDATE_LEN};
 static str method_ack   = {ACK, ACK_LEN};
 static str method_bye   = {BYE, BYE_LEN};
 static str method_cancel= {CANCEL, CANCEL_LEN};
@@ -4209,6 +4210,7 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 	str to_uri={NULL,0}, from_uri, from_dname;
 	b2b_req_data_t req_data;
 	b2b_rpl_data_t rpl_data;
+	int update = 0;
 	int ret;
 
 	if(!msg || !key)
@@ -4281,24 +4283,24 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 		goto error;
 	}
 
-	/* if(bridging_entity->state != B2BL_ENT_CONFIRMED)
+	if(!b2b_early_update && bridging_entity->state != B2BL_ENT_CONFIRMED)
 	{
-		LM_ERR("Wrong state for entity ek=[%.*s], tk=[%.*s] state=%d\n",
+		LM_ERR("Wrong state for entity ek=[%.*s], tk=[%.*s] state=%d [Update on early disabled]\n",
 			bridging_entity->key.len,bridging_entity->key.s, key->len, key->s,
 			bridging_entity->state);
 		goto error;
-	} */
+	}
 
 	b2bl_print_tuple(tuple, L_DBG);
 
 	LM_DBG("terminating b2bl_entity [%p]->[%.*s] type [%d]\n",
 				old_entity, old_entity->key.len, old_entity->key.s,
 				old_entity->type);
-	if(old_entity->disconnected > 0)
+	if(old_entity->disconnected)
 	{
 		memset(&rpl_data, 0, sizeof(b2b_rpl_data_t));
 		PREP_RPL_DATA(old_entity);
-		if (old_entity->disconnected == 1)
+		if (!update)
 		{
 			rpl_data.method = METHOD_BYE;
 		}
@@ -4317,18 +4319,18 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 		if(old_entity->state == B2BL_ENT_CONFIRMED)
 		{
 			req_data.method = &method_bye;
-			old_entity->disconnected = 1;
 		}
 		else
 		{
 			req_data.method = &method_cancel;
 			req_data.extra_headers = &cancel_reason_hdr;
-			old_entity->disconnected = 2;
+			update = 1;
 		}
 		req_data.no_cb = 1;
 		b2bl_htable[hash_index].locked_by = process_no;
 		b2b_api.send_request(&req_data);
 		b2bl_htable[hash_index].locked_by = -1;
+		old_entity->disconnected = 1;
 	}
 	if (old_entity->peer->peer == old_entity)
 		old_entity->peer->peer = NULL;
@@ -4413,14 +4415,20 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 
 	memset(&req_data, 0, sizeof(b2b_req_data_t));
 	PREP_REQ_DATA(bridging_entity);
-	req_data.method =&method_invite;
+	if (update) {
+		req_data.method =&method_update;
+	}
+	else
+	{
+		req_data.method =&method_invite;
+	}
 	req_data.client_headers =&bridging_entity->hdrs;
 	req_data.body = &body;
 	b2bl_htable[hash_index].locked_by = process_no;
 	if(b2b_api.send_request(&req_data) < 0)
 	{
 		b2bl_htable[hash_index].locked_by = -1;
-		LM_ERR("Failed to send reInvite\n");
+		LM_ERR("Failed to send Update/reInvite\n");
 		goto error;
 	}
 	b2bl_htable[hash_index].locked_by = -1;

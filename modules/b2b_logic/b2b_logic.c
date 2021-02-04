@@ -152,13 +152,15 @@ str b2bl_dbtable= str_init("b2b_logic");
 str init_callid_hdr={0, 0};
 
 str server_address = {0, 0};
-int b2bl_db_mode = WRITE_BACK;
+int b2b_early_update = 0;
 int unsigned b2bl_th_init_timeout = 60;
 
 str b2bl_mod_name = str_init("b2b_logic");
 
 str top_hiding_scen_s;
 str internal_scen_s;
+
+int b2bl_db_mode = WRITE_BACK;
 
 /* used to identify the current tuple in local_route, in the context of a request
  * that is not triggerd by a received message from an ongoing b2b dialog */
@@ -241,6 +243,7 @@ static param_export_t params[]=
 	{"init_callid_hdr", STR_PARAM,                &init_callid_hdr.s         },
 	{"db_mode",         INT_PARAM,                &b2bl_db_mode              },
 	{"b2bl_th_init_timeout",INT_PARAM,            &b2bl_th_init_timeout      },
+	{"b2bl_early_update",INT_PARAM,            &b2b_early_update      },
 	{0,                    0,                          0                     }
 };
 
