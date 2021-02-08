@@ -88,6 +88,7 @@ static str method_cancel= {CANCEL, CANCEL_LEN};
 
 static str ok = str_init("OK");
 static str notAcceptable = str_init("Not Acceptable");
+static str notTemporarilyUnavailable = str_init("Termporarily Unavailable - answered elsewhere");
 
 int entity_add_dlginfo(b2bl_entity_id_t* entity, b2b_dlginfo_t* dlginfo)
 {
@@ -4300,36 +4301,34 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 	{
 		memset(&rpl_data, 0, sizeof(b2b_rpl_data_t));
 		PREP_RPL_DATA(old_entity);
-		if (!update)
-		{
-			rpl_data.method = METHOD_BYE;
-		}
-		else
-		{
-			rpl_data.method = METHOD_CANCEL;
-		}
+		rpl_data.method = METHOD_BYE;
 		rpl_data.code =200;
 		rpl_data.text =&ok;
 		b2b_api.send_reply(&rpl_data);
 	}
 	else
 	{
-		memset(&req_data, 0, sizeof(b2b_req_data_t));
-		PREP_REQ_DATA(old_entity);
 		if(old_entity->state == B2BL_ENT_CONFIRMED)
 		{
+			memset(&req_data, 0, sizeof(b2b_req_data_t));
+			PREP_REQ_DATA(old_entity);
 			req_data.method = &method_bye;
+			req_data.no_cb = 1;
+			b2bl_htable[hash_index].locked_by = process_no;
+			b2b_api.send_request(&req_data);
+			b2bl_htable[hash_index].locked_by = -1;
 		}
 		else
 		{
-			req_data.method = &method_cancel;
-			req_data.extra_headers = &cancel_reason_hdr;
+			memset(&rpl_data, 0, sizeof(b2b_rpl_data_t));
+			PREP_RPL_DATA(old_entity);
+			rpl_data.method = METHOD_INVITE;
+			rpl_data.code =480;
+			rpl_data.text =&notTemporarilyUnavailable;
+			b2b_api.send_reply(&rpl_data);
+			
 			update = 1;
 		}
-		req_data.no_cb = 1;
-		b2bl_htable[hash_index].locked_by = process_no;
-		b2b_api.send_request(&req_data);
-		b2bl_htable[hash_index].locked_by = -1;
 		old_entity->disconnected = 1;
 	}
 	if (old_entity->peer->peer == old_entity)
