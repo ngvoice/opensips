@@ -1,0 +1,3 @@
+#!/bin/bash
+docker build -t dockerhub.ng-voice.com/opensips-base:develop .
+docker push dockerhub.ng-voice.com/opensips-base:develop
