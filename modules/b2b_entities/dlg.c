@@ -735,7 +735,7 @@ int b2b_prescript_f(struct sip_msg *msg, void *uparam)
 				rt = (rr_t*)route_hdr->parsed;
 			}
 		}
-		if (rt) {
+		if (check_more_routes && rt) {
 			if ( parse_uri(rt->nameaddr.uri.s,rt->nameaddr.uri.len,&puri)!=0 ) {
 				LM_ERR("Second route uri is not valid <%.*s>\n",
 					rt->nameaddr.uri.len,rt->nameaddr.uri.s);

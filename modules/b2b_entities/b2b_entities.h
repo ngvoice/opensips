@@ -59,6 +59,7 @@ extern str b2be_dbtable;
 extern int b2be_db_mode;
 extern int serialize_backend;
 extern int b2b_ctx_idx;
+extern int check_more_routes;
 
 void *b2b_get_context(void);
 

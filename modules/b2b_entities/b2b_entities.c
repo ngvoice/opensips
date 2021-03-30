@@ -74,6 +74,7 @@ str b2b_key_prefix = str_init("B2B");
 int b2be_db_mode = WRITE_BACK;
 b2b_table server_htable;
 b2b_table client_htable;
+int check_more_routes = 1;
 
 int b2be_cluster;
 int serialize_backend;
@@ -106,6 +107,7 @@ static param_export_t params[]={
 	{ "update_period",         INT_PARAM,    &b2b_update_period  },
 	{ "b2b_key_prefix",        STR_PARAM,    &b2b_key_prefix.s   },
 	{ "cluster_id",            INT_PARAM,    &b2be_cluster		 },
+	{ "check_more_routes",     INT_PARAM,    &check_more_routes  },
 	{ 0,                       0,            0                   }
 };
 
