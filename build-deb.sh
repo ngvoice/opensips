@@ -4,6 +4,8 @@ set -e
 
 cd /tmp/build/opensips
 mkdir /tmp/deb/
+rm -rf modules/proto_bins
+rm -rf modules/wolfssl
 # make
 # make tar
 make deb
