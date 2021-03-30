@@ -21,10 +21,10 @@
 	<row>
 		<entry>1. </entry>
 		<entry>Liviu Chircu (<ulink url="https://github.com/liviuchircu">@liviuchircu</ulink>)</entry>
-		<entry align="center">142</entry>
-		<entry align="center">58</entry>
-		<entry align="center">4776</entry>
-		<entry align="center">2715</entry>
+		<entry align="center">145</entry>
+		<entry align="center">60</entry>
+		<entry align="center">4796</entry>
+		<entry align="center">2735</entry>
 	</row>
 	<row>
 		<entry>2. </entry>
@@ -69,7 +69,7 @@
 	</tbody>
 	</tgroup>
 	</table>
-	
+
 	<para>
 	    <emphasis>(1) DevScore = author_commits + author_lines_added / (project_lines_added / project_commits) + author_lines_deleted / (project_lines_deleted / project_commits)</emphasis>
 	</para>
@@ -97,7 +97,7 @@
 	<row>
 		<entry>1. </entry>
 		<entry>Liviu Chircu (<ulink url="https://github.com/liviuchircu">@liviuchircu</ulink>)</entry>
-		<entry align="center">Jan 2020 - Jan 2021</entry>
+		<entry align="center">Jan 2020 - Mar 2021</entry>
 	</row>
 	<row>
 		<entry>2. </entry>
@@ -127,7 +127,7 @@
 	</tbody>
 	</tgroup>
 	</table>
-	
+
 	<para>
 	    <emphasis>(1) including any documentation-related commits, excluding merge commits</emphasis>
 	</para>

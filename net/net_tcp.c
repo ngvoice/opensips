@@ -169,7 +169,7 @@ static inline int init_sock_keepalive(int s)
 				strerror(errno));
 			return -1;
 		}
-		LM_INFO("TCP keepalive enabled on socket %d\n",s);
+		LM_DBG("TCP keepalive enabled on socket %d\n",s);
 	}
 #endif
 #ifdef HAVE_TCP_KEEPINTVL
@@ -1507,6 +1507,7 @@ static inline void __tcpconn_lifetime(int force)
 							c->flags|=F_CONN_REMOVED;
 						}
 						close(fd);
+						c->s = -1;
 					}
 					_tcpconn_rm(c);
 					tcp_connections_no--;

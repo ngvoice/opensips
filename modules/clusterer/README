@@ -654,10 +654,8 @@ cluster_broadcast_req($var(cl_id), $var(share_data));
      * addr_type (string, optional) - select the address of the
        node that the comparison is made against, with the possible
        values of:
-          + bin - node's BIN interface listener;
-          + sip - node's DB provisioned SIP address.
-       The default behaviour is to compare against the SIP
-       address.
+          + "sip" (default) - a node's DB provisioned SIP address
+          + "bin" - a node's BIN interface listener
 
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    ONREPLY_ROUTE, BRANCH_ROUTE, LOCAL_ROUTE and EVENT_ROUTE.
@@ -1212,8 +1210,8 @@ Chapter 3. Contributors
    Table 3.1. Top contributors by DevScore^(1), authored
    commits^(2) and lines added/removed^(3)
      Name DevScore Commits Lines ++ Lines --
-   1. Vlad Patrascu (@rvlad-patrascu) 312 101 12153 6810
-   2. Liviu Chircu (@liviuchircu) 50 36 625 440
+   1. Vlad Patrascu (@rvlad-patrascu) 315 103 12182 6832
+   2. Liviu Chircu (@liviuchircu) 51 37 627 443
    3. Eseanu Marius Cristian (@eseanucristian) 45 10 3142 534
    4. Razvan Crainea (@razvancrainea) 23 17 319 143
    5. Bogdan-Andrei Iancu (@bogdan-iancu) 23 11 1118 110
@@ -1221,7 +1219,9 @@ Chapter 3. Contributors
    7. Fabian Gast (@fgast) 4 2 3 3
    8. Gohar Ahmed (@goharahmed) 3 1 6 5
    9. Maksym Sobolyev (@sobomax) 3 1 2 2
-   10. Peter Lemenkov (@lemenkov) 3 1 1 1
+   10. kworm83 3 1 2 2
+
+   All remaining contributors: Peter Lemenkov (@lemenkov).
 
    (1) DevScore = author_commits + author_lines_added /
    (project_lines_added / project_commits) + author_lines_deleted
@@ -1242,18 +1242,20 @@ Chapter 3. Contributors
 3.2. By Commit Activity
 
    Table 3.2. Most recently active contributors^(1) to this module
-     Name Commit Activity
-   1. Vlad Patrascu (@rvlad-patrascu) Jul 2016 - Jan 2021
-   2. Maksym Sobolyev (@sobomax) Jan 2021 - Jan 2021
-   3. Fabian Gast (@fgast) Nov 2018 - Jul 2020
-   4. Liviu Chircu (@liviuchircu) Mar 2016 - Jul 2020
-   5. Bogdan-Andrei Iancu (@bogdan-iancu) Apr 2016 - Apr 2020
-   6. Razvan Crainea (@razvancrainea) Nov 2015 - Sep 2019
-   7. Gohar Ahmed (@goharahmed) Mar 2019 - Mar 2019
-   8. Peter Lemenkov (@lemenkov) Jun 2018 - Jun 2018
-   9. Ionel Cerghit (@ionel-cerghit) Dec 2016 - Dec 2016
-   10. Eseanu Marius Cristian (@eseanucristian) Jul 2015 - Sep
-   2015
+                      Name                   Commit Activity
+   1.  Vlad Patrascu (@rvlad-patrascu)     Jul 2016 - Mar 2021
+   2.  Liviu Chircu (@liviuchircu)         Mar 2016 - Mar 2021
+   3.  kworm83                             Feb 2021 - Feb 2021
+   4.  Maksym Sobolyev (@sobomax)          Jan 2021 - Jan 2021
+   5.  Fabian Gast (@fgast)                Nov 2018 - Jul 2020
+   6.  Bogdan-Andrei Iancu (@bogdan-iancu) Apr 2016 - Apr 2020
+   7.  Razvan Crainea (@razvancrainea)     Nov 2015 - Sep 2019
+   8.  Gohar Ahmed (@goharahmed)           Mar 2019 - Mar 2019
+   9.  Peter Lemenkov (@lemenkov)          Jun 2018 - Jun 2018
+   10. Ionel Cerghit (@ionel-cerghit)      Dec 2016 - Dec 2016
+
+   All remaining contributors: Eseanu Marius Cristian
+   (@eseanucristian).
 
    (1) including any documentation-related commits, excluding
    merge commits
@@ -1262,10 +1264,10 @@ Chapter 4. Documentation
 
 4.1. Contributors
 
-   Last edited by: Vlad Patrascu (@rvlad-patrascu), Fabian Gast
-   (@fgast), Bogdan-Andrei Iancu (@bogdan-iancu), Liviu Chircu
-   (@liviuchircu), Razvan Crainea (@razvancrainea), Peter Lemenkov
-   (@lemenkov), Eseanu Marius Cristian (@eseanucristian).
+   Last edited by: Liviu Chircu (@liviuchircu), Vlad Patrascu
+   (@rvlad-patrascu), Fabian Gast (@fgast), Bogdan-Andrei Iancu
+   (@bogdan-iancu), Razvan Crainea (@razvancrainea), Peter
+   Lemenkov (@lemenkov), Eseanu Marius Cristian (@eseanucristian).
 
    Documentation Copyrights:
 

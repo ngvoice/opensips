@@ -45,10 +45,10 @@
 	<row>
 		<entry>4. </entry>
 		<entry>Liviu Chircu (<ulink url="https://github.com/liviuchircu">@liviuchircu</ulink>)</entry>
-		<entry align="center">34</entry>
-		<entry align="center">27</entry>
-		<entry align="center">419</entry>
-		<entry align="center">162</entry>
+		<entry align="center">35</entry>
+		<entry align="center">28</entry>
+		<entry align="center">423</entry>
+		<entry align="center">164</entry>
 	</row>
 	<row>
 		<entry>5. </entry>
@@ -101,7 +101,7 @@
 	</tbody>
 	</tgroup>
 	</table>
-	<para><emphasis role='bold'>All remaining contributors</emphasis>: Nils Ohlmeier, Norman Brandinger (<ulink url="https://github.com/NormB">@NormB</ulink>), Peter Lemenkov (<ulink url="https://github.com/lemenkov">@lemenkov</ulink>), Eseanu Marius Cristian (<ulink url="https://github.com/eseanucristian">@eseanucristian</ulink>), Dan Pascu (<ulink url="https://github.com/danpascu">@danpascu</ulink>), Ionut Ionita (<ulink url="https://github.com/ionutrazvanionita">@ionutrazvanionita</ulink>), Ovidiu Sas (<ulink url="https://github.com/ovidiusas">@ovidiusas</ulink>), Konstantin Bokarius, Andreas Heise, Razvan Pistolea, Saúl Ibarra Corretgé (<ulink url="https://github.com/saghul">@saghul</ulink>), Sergio Gutierrez, Edson Gellert Schubert, Augusto Caringi.</para>
+<para><emphasis role='bold'>All remaining contributors</emphasis>: Nils Ohlmeier, Norman Brandinger (<ulink url="https://github.com/NormB">@NormB</ulink>), Peter Lemenkov (<ulink url="https://github.com/lemenkov">@lemenkov</ulink>), Eseanu Marius Cristian (<ulink url="https://github.com/eseanucristian">@eseanucristian</ulink>), Dan Pascu (<ulink url="https://github.com/danpascu">@danpascu</ulink>), Ionut Ionita (<ulink url="https://github.com/ionutrazvanionita">@ionutrazvanionita</ulink>), Ovidiu Sas (<ulink url="https://github.com/ovidiusas">@ovidiusas</ulink>), Konstantin Bokarius, Andreas Heise, Razvan Pistolea, Saúl Ibarra Corretgé (<ulink url="https://github.com/saghul">@saghul</ulink>), Sergio Gutierrez, Edson Gellert Schubert, Augusto Caringi.</para>
 	<para>
 	    <emphasis>(1) DevScore = author_commits + author_lines_added / (project_lines_added / project_commits) + author_lines_deleted / (project_lines_deleted / project_commits)</emphasis>
 	</para>
@@ -128,13 +128,13 @@
 	<tbody>
 	<row>
 		<entry>1. </entry>
-		<entry>Razvan Crainea (<ulink url="https://github.com/razvancrainea">@razvancrainea</ulink>)</entry>
-		<entry align="center">Oct 2011 - Jan 2021</entry>
+		<entry>Liviu Chircu (<ulink url="https://github.com/liviuchircu">@liviuchircu</ulink>)</entry>
+		<entry align="center">Mar 2014 - Mar 2021</entry>
 	</row>
 	<row>
 		<entry>2. </entry>
-		<entry>Liviu Chircu (<ulink url="https://github.com/liviuchircu">@liviuchircu</ulink>)</entry>
-		<entry align="center">Mar 2014 - Dec 2020</entry>
+		<entry>Razvan Crainea (<ulink url="https://github.com/razvancrainea">@razvancrainea</ulink>)</entry>
+		<entry align="center">Oct 2011 - Jan 2021</entry>
 	</row>
 	<row>
 		<entry>3. </entry>
@@ -179,7 +179,7 @@
 	</tbody>
 	</tgroup>
 	</table>
-	<para><emphasis role='bold'>All remaining contributors</emphasis>: Saúl Ibarra Corretgé (<ulink url="https://github.com/saghul">@saghul</ulink>), Razvan Pistolea, Norman Brandinger (<ulink url="https://github.com/NormB">@NormB</ulink>), Sergio Gutierrez, Henning Westerholt (<ulink url="https://github.com/henningw">@henningw</ulink>), Daniel-Constantin Mierla (<ulink url="https://github.com/miconda">@miconda</ulink>), Konstantin Bokarius, Edson Gellert Schubert, Andreas Heise, Jan Janak (<ulink url="https://github.com/janakj">@janakj</ulink>), Andrei Pelinescu-Onciul, Dan Pascu (<ulink url="https://github.com/danpascu">@danpascu</ulink>), Jiri Kuthan (<ulink url="https://github.com/jiriatipteldotorg">@jiriatipteldotorg</ulink>), Nils Ohlmeier.</para>
+<para><emphasis role='bold'>All remaining contributors</emphasis>: Saúl Ibarra Corretgé (<ulink url="https://github.com/saghul">@saghul</ulink>), Razvan Pistolea, Norman Brandinger (<ulink url="https://github.com/NormB">@NormB</ulink>), Sergio Gutierrez, Henning Westerholt (<ulink url="https://github.com/henningw">@henningw</ulink>), Daniel-Constantin Mierla (<ulink url="https://github.com/miconda">@miconda</ulink>), Konstantin Bokarius, Edson Gellert Schubert, Andreas Heise, Jan Janak (<ulink url="https://github.com/janakj">@janakj</ulink>), Andrei Pelinescu-Onciul, Dan Pascu (<ulink url="https://github.com/danpascu">@danpascu</ulink>), Jiri Kuthan (<ulink url="https://github.com/jiriatipteldotorg">@jiriatipteldotorg</ulink>), Nils Ohlmeier.</para>
 	<para>
 	    <emphasis>(1) including any documentation-related commits, excluding merge commits</emphasis>
 	</para>

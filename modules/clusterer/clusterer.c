@@ -219,7 +219,7 @@ static int msg_send_retry(bin_packet_t *packet, node_info_t *dest,
 		}
 		bin_get_buffer(packet, &send_buffer);
 
-		if (msg_send(chosen_dest->cluster->send_sock, clusterer_proto,
+		if (msg_send(chosen_dest->cluster->send_sock, chosen_dest->proto,
 			&chosen_dest->addr, 0, send_buffer.s, send_buffer.len, 0) < 0) {
 			LM_ERR("msg_send() to node [%d] failed\n", chosen_dest->node_id);
 			retr_send = 1;
@@ -902,7 +902,8 @@ void bin_rcv_cl_extra_packets(bin_packet_t *packet, int packet_type,
 		goto exit;
 	}
 
-	if (!su_ip_cmp(&ri->src_su, &node->addr)) {
+	if (!su_ip_cmp(&ri->src_su, &node->addr) &&
+		!ip_check(cl, &ri->src_su, NULL)) {
 		LM_WARN("Received message from unknown source, addr: %s\n", ip);
 		goto exit;
 	}
@@ -1026,9 +1027,10 @@ void bin_rcv_cl_packets(bin_packet_t *packet, int packet_type,
 		LM_INFO("Received message with unknown source id [%d]\n", source_id);
 		if (!db_mode)
 			handle_internal_msg_unknown(packet, cl, packet_type, &ri->src_su,
-				source_id);
+				ri->proto, source_id);
 	} else {
-		if (!su_ip_cmp(&ri->src_su, &node->addr)) {
+		if (!su_ip_cmp(&ri->src_su, &node->addr) &&
+			!ip_check(cl, &ri->src_su, NULL)) {
 			LM_WARN("Received message from unknown source, addr: %s\n", ip);
 			goto exit;
 		}
@@ -1157,7 +1159,8 @@ static void bin_rcv_mod_packets(bin_packet_t *packet, int packet_type,
 		goto exit;
 	}
 
-	if (!su_ip_cmp(&ri->src_su, &node->addr)) {
+	if (!su_ip_cmp(&ri->src_su, &node->addr) &&
+		!ip_check(cl, &ri->src_su, NULL)) {
 		LM_WARN("Received message from unknown source, addr: %s\n", ip);
 		goto exit;
 	}
@@ -1281,7 +1284,7 @@ int send_single_cap_update(cluster_info_t *cluster, struct local_cap *cap,
 	bin_get_buffer(&packet, &bin_buffer);
 
 	for (i = 0; i < no_dests; i++)
-		if (msg_send(cluster->send_sock, clusterer_proto,
+		if (msg_send(cluster->send_sock, destinations[i]->proto,
 			&destinations[i]->addr, 0, bin_buffer.s, bin_buffer.len, 0) < 0) {
 			LM_ERR("Failed to send capability update to node [%d]\n",
 				destinations[i]->node_id);
@@ -1364,7 +1367,7 @@ int send_cap_update(node_info_t *dest_node, int require_reply)
 	bin_push_int(&packet, current_id);
 	bin_get_buffer(&packet, &bin_buffer);
 
-	if (msg_send(dest_node->cluster->send_sock, clusterer_proto, &dest_node->addr,
+	if (msg_send(dest_node->cluster->send_sock, dest_node->proto, &dest_node->addr,
 		0, bin_buffer.s, bin_buffer.len, 0) < 0) {
 		LM_ERR("Failed to send capability update to node [%d]\n", dest_node->node_id);
 		set_link_w_neigh_adv(-1, LS_RESTART_PINGING, dest_node);
@@ -1401,7 +1404,7 @@ void do_actions_node_ev(cluster_info_t *clusters, int *select_cluster,
 					if (cap_it->reg.event_cb)
 						cap_it->reg.event_cb(CLUSTER_NODE_DOWN, node->node_id);
 
-				if (raise_node_state_ev(cl->cluster_id, CLUSTER_NODE_DOWN,
+				if (raise_node_state_ev(CLUSTER_NODE_DOWN, cl->cluster_id,
 					node->node_id) < 0)
 					LM_ERR("Failed to raise node state changed event for: "
 						"cluster_id=%d node_id=%d, new_state=node down\n",
@@ -1466,7 +1469,7 @@ void do_actions_node_ev(cluster_info_t *clusters, int *select_cluster,
 						cap_it->reg.event_cb(CLUSTER_NODE_UP, node->node_id);
 				}
 
-				if (raise_node_state_ev(cl->cluster_id, CLUSTER_NODE_UP,
+				if (raise_node_state_ev(CLUSTER_NODE_UP, cl->cluster_id,
 					node->node_id) < 0)
 					LM_ERR("Failed to raise node state changed event for: "
 						"cluster_id=%d node_id=%d, new_state=node up\n",
