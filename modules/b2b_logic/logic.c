@@ -435,6 +435,7 @@ void b2b_end_dialog(b2bl_entity_id_t* bentity, b2bl_tuple_t* tuple,
 	else
 	{
 		LM_DBG("It is not connected yet - delete\n");
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);		
 		b2bl_delete_entity(bentity, tuple, hash_index, 1);
 	}
 
@@ -464,6 +465,7 @@ int process_bridge_dialog_end(b2bl_tuple_t* tuple, unsigned int hash_index,
 		/* if the media server in 2 stage connecting did not reply */
 		if(tuple->bridge_entities[2])
 		{
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);
 			/* media server did not reply with success */
 			b2bl_delete_entity(bentity, tuple, hash_index, 1);
 
@@ -479,6 +481,7 @@ int process_bridge_dialog_end(b2bl_tuple_t* tuple, unsigned int hash_index,
 			if(tuple->bridge_flags & B2BL_BR_FLAG_RETURN_AFTER_FAILURE &&
 				tuple->bridge_initiator != 0 && tuple->bridge_initiator->peer)
 			{
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);
 				/* Delete failed entity */
 				b2bl_delete_entity(bentity, tuple, hash_index, 1);
 
@@ -638,6 +641,7 @@ int process_bridge_negreply(b2bl_tuple_t* tuple,
 
 		if(ret == B2B_DROP_MSG_CB_RET)
 		{
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);
 			/* drop the negative reply */
 			if(entity_no == 1)
 				b2bl_delete_entity(entity, tuple, hash_index, 1);
@@ -827,6 +831,7 @@ int process_bridge_200OK(struct sip_msg* msg, str* extra_headers,
 			}
 			entity->no =1;
 			pkg_free(client_id);
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);			
 			b2bl_delete_entity(bentity1, tuple, hash_index, 1);
 
 			tuple->bridge_entities[1] = entity;
@@ -973,6 +978,7 @@ int process_bridge_200OK(struct sip_msg* msg, str* extra_headers,
 				return -1;
 			}
 			entity->no = 1;
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);			
 			b2bl_delete_entity(tuple->bridge_entities[2], tuple, hash_index, 1);
 			if (0 != b2bl_add_client(tuple, entity))
 				return -1;
@@ -1204,6 +1210,7 @@ int _b2b_handle_reply(struct sip_msg *msg, b2bl_tuple_t *tuple,
 			process_bridge_notify(tuple->bridge_initiator, cur_route_ctx.hash_index, msg);
 			if(statuscode == 200 || !(tuple->bridge_flags & B2BL_BR_FLAG_RETURN_AFTER_FAILURE))
 			{
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);
 				b2bl_delete_entity(tuple->bridge_initiator, tuple, tuple->hash_index, 1);
 				tuple->bridge_initiator = 0;
 			}
@@ -1492,6 +1499,7 @@ int b2b_logic_notify_reply(int src, struct sip_msg* msg, str* key, str* body, st
 	if(entity->disconnected)
 	{
 		LM_DBG("entity [%.*s] is disconnected\n", key->len, key->s);
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);		
 		b2bl_delete_entity(entity, tuple, hash_index, 1);
 
 		if(tuple->to_del && tuple->clients[0]==NULL && tuple->clients[1]==NULL &&
@@ -1824,6 +1832,7 @@ int b2b_logic_notify_request(int src, struct sip_msg* msg, str* key, str* body, 
 				rpl_data.code =200;
 				rpl_data.text =&ok;
 				b2b_api.send_reply(&rpl_data);
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);				
 				b2bl_delete_entity(entity, tuple, hash_index, 1);
 				entity = NULL;
 				goto done;
@@ -2265,6 +2274,7 @@ int b2b_delete_entity(struct sip_msg *msg)
 
 	if(entity->peer)
 		entity->peer->peer = 0;
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);		
 	b2bl_delete_entity(entity, tuple, cur_route_ctx.hash_index, 1);
 
 	cur_route_ctx.flags |= B2BL_RT_DO_UPDATE;
@@ -3845,6 +3855,7 @@ int b2bl_bridge(str* key, str* new_dst, str *new_proxy, str* new_from_dname,
 			rpl_data.code =200;
 			rpl_data.text =&ok;
 			b2b_api.send_reply(&rpl_data);
+LM_ERR(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n b2bl_delete_entity called from %s, line %d\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n", __func__, __LINE__);			
 			b2bl_delete_entity(old_entity, tuple, hash_index, 1);
 		}
 		else
