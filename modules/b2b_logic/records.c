@@ -101,13 +101,33 @@ b2bl_tuple_t* b2bl_insert_new(struct sip_msg* msg, unsigned int hash_index,
 	str extra_headers={0, 0};
 	str local_contact= server_address;
 
-	if(msg)
+	if (server_address.len > 0)
 	{
-		if (get_local_contact(msg->rcv.bind_address, NULL, &local_contact) < 0)
+		if (pv_printf_s(msg, server_address_pve, &local_contact) != 0)
 		{
-			LM_ERR("Failed to get received address\n");
-			local_contact= server_address;
+			LM_WARN("Failed to build contact from server address\n");
+			if (get_local_contact(msg->rcv.bind_address, NULL, &local_contact) < 0)
+			{
+				LM_ERR("Failed to build contact from received address\n");
+				goto error;
+			}
 		}
+	}
+	else
+	{
+		if(msg)
+		{
+			if (get_local_contact(msg->rcv.bind_address, NULL, &local_contact) < 0)
+			{
+				LM_ERR("Failed to build contact from received address\n");
+				goto error;
+			}
+		}
+	}
+	if (local_contact.len <= 0)
+	{
+		LM_ERR("Unable to define contact\n");
+		goto error;
 	}
 
 	size = sizeof(b2bl_tuple_t) + local_contact.len;

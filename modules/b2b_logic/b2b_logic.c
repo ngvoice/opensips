@@ -91,7 +91,10 @@ int b2b_end_dlg_leg(struct sip_msg *msg);
 int b2b_send_reply(struct sip_msg *msg, int *code, str *reason, str *headers, str *body);
 int b2b_scenario_bridge(struct sip_msg *msg, str *br_ent1, str *br_ent2,
 	str *provmedia_uri, int *lifetime);
-int  b2b_bridge_request(struct sip_msg* msg, str *key, int *entity_no);
+int b2b_bridge_request(struct sip_msg* msg, str *key, int *entity_no);
+int b2b_bridge_extern(struct sip_msg* msg, str *id, struct b2b_bridge_params * params, 
+	str *ent1, pv_spec_t *ent1_hnames, pv_spec_t *ent1_hvals,
+	str *ent2, pv_spec_t *ent2_hnames, pv_spec_t *ent2_hvals);
 
 int pv_get_b2bl_key(struct sip_msg *msg, pv_param_t *param, pv_value_t *res);
 int pv_get_scenario(struct sip_msg *msg, pv_param_t *param, pv_value_t *res);
@@ -153,6 +156,7 @@ str b2bl_dbtable= str_init("b2b_logic");
 str init_callid_hdr={0, 0};
 
 str server_address = {0, 0};
+pv_elem_t *server_address_pve;
 int b2b_early_update = 0;
 int unsigned b2bl_th_init_timeout = 60;
 
@@ -215,6 +219,18 @@ static cmd_export_t cmds[]=
 		{CMD_PARAM_STR|CMD_PARAM_OPT,0,0},
 		{CMD_PARAM_STR|CMD_PARAM_OPT|CMD_PARAM_FIX_NULL,
 			fixup_bridge_flags, fixup_free_init_flags}, {0,0,0}},
+		REQUEST_ROUTE},
+	{"b2b_trigger_scenario", (cmd_function)b2b_bridge_extern, {
+		{CMD_PARAM_STR,fixup_init_id,0},
+		{CMD_PARAM_STR|CMD_PARAM_OPT|CMD_PARAM_FIX_NULL,
+			fixup_bridge_flags, fixup_free_init_flags},
+		{CMD_PARAM_STR,0,0},
+		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},
+		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},
+		{CMD_PARAM_STR,0,0},
+		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},
+		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},
+		{0,0,0}},
 		REQUEST_ROUTE},
 	{"b2b_bridge_request", (cmd_function)b2b_bridge_request,
 		{{CMD_PARAM_STR,0,0}, {CMD_PARAM_INT,0,0}, {0,0,0}},
@@ -347,8 +363,16 @@ static int mod_init(void)
 	}
 	b2bl_hsize = 1<<b2bl_hsize;
 
-	if (server_address.s)
+
+	if(server_address.s)
+	{
 		server_address.len = strlen(server_address.s);
+		if(pv_parse_format(&server_address, &server_address_pve) < 0)
+		{
+			LM_ERR("failed to parse server_address [%.*s]\n", server_address.len, server_address.s);
+			return E_CFG;
+		}
+	}
 
 	if(init_b2bl_htable() < 0)
 	{
@@ -652,6 +676,8 @@ static void mod_destroy(void)
 			b2bl_dbf.close(b2bl_db);
 		}
 	}
+	if (server_address_pve)
+		pv_elem_free_all(server_address_pve);
 
 	destroy_b2bl_htable();
 }
@@ -1564,6 +1590,10 @@ int pv_parse_entity_name(pv_spec_p sp, const str *in)
 		sp->pvp.pvn.u.isname.name.n = PV_ENTITY_CALLID;
 	else if (!str_strcmp(in, const_str("id")))
 		sp->pvp.pvn.u.isname.name.n = PV_ENTITY_ID;
+	else if (!str_strcmp(in, const_str("fromtag")))
+		sp->pvp.pvn.u.isname.name.n = PV_ENTITIY_FROMTAG;
+	else if (!str_strcmp(in, const_str("totag")))
+		sp->pvp.pvn.u.isname.name.n = PV_ENTITIY_TOTAG;
 	else {
 		LM_ERR("Bad subname for $b2b_logic.entity\n");
 		return -1;
@@ -1710,6 +1740,24 @@ int pv_get_entity(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
 		break;
 	case PV_ENTITY_ID:
 		res->rs = entity->scenario_id;
+		break;
+	case PV_ENTITIY_FROMTAG:
+		if (entity->dlginfo) {
+			res->rs = entity->dlginfo->fromtag;
+		} else {
+			LM_DBG("No dialog info for entity: [%d] from tuple: [%.*s]\n",
+				param->pvi.u.ival, tuple->key->len, tuple->key->s);
+			goto ret_null;
+		}
+		break;
+	case PV_ENTITIY_TOTAG:
+		if (entity->dlginfo) {
+			res->rs = entity->dlginfo->totag;
+		} else {
+			LM_DBG("No dialog info for entity: [%d] from tuple: [%.*s]\n",
+				param->pvi.u.ival, tuple->key->len, tuple->key->s);
+			goto ret_null;
+		}
 		break;
 	default:
 		LM_ERR("Bad subname\n");

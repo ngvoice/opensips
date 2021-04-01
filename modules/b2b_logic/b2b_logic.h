@@ -97,7 +97,9 @@ struct b2b_bridge_params
 enum pv_entity_field {
 	PV_ENTITY_KEY,
 	PV_ENTITY_CALLID,
-	PV_ENTITY_ID
+	PV_ENTITY_ID,
+	PV_ENTITIY_FROMTAG,
+	PV_ENTITIY_TOTAG
 };
 
 extern str custom_headers_lst[HDR_LST_LEN];
@@ -105,6 +107,7 @@ extern regex_t* custom_headers_re;
 extern int custom_headers_lst_len;
 extern int use_init_sdp;
 extern str server_address;
+extern pv_elem_t *server_address_pve;
 extern unsigned int max_duration;
 extern str init_callid_hdr;
 extern str db_url;
