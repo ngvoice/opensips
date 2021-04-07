@@ -46,7 +46,7 @@
 #include "b2be_db.h"
 #include "b2be_clustering.h"
 
-#define BUF_LEN              1024
+#define BUF_LEN              2048
 
 str ack = str_init(ACK);
 str bye = str_init(BYE);
@@ -3328,7 +3328,9 @@ int b2breq_complete_ehdr(str* extra_headers, str *client_headers,
 	if(((extra_headers?extra_headers->len:0) + 14 + local_contact->len +
 		(client_headers?client_headers->len:0))> BUF_LEN)
 	{
-		LM_ERR("Buffer too small\n");
+		LM_ERR("Buffer too small - needed %i, got %i\n",
+		((extra_headers?extra_headers->len:0) + 14 + local_contact->len +
+		(client_headers?client_headers->len:0)), BUF_LEN);
 		return -1;
 	}
 

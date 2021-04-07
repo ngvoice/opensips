@@ -92,7 +92,7 @@ int b2b_send_reply(struct sip_msg *msg, int *code, str *reason, str *headers, st
 int b2b_scenario_bridge(struct sip_msg *msg, str *br_ent1, str *br_ent2,
 	str *provmedia_uri, int *lifetime);
 int b2b_bridge_request(struct sip_msg* msg, str *key, int *entity_no);
-int b2b_bridge_extern(struct sip_msg* msg, str *id, struct b2b_bridge_params * params, 
+int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params, 
 	str *ent1, pv_spec_t *ent1_hnames, pv_spec_t *ent1_hvals,
 	str *ent2, pv_spec_t *ent2_hnames, pv_spec_t *ent2_hvals);
 
@@ -222,8 +222,8 @@ static cmd_export_t cmds[]=
 		REQUEST_ROUTE},
 	{"b2b_trigger_scenario", (cmd_function)b2b_bridge_extern, {
 		{CMD_PARAM_STR,fixup_init_id,0},
-		{CMD_PARAM_STR|CMD_PARAM_OPT|CMD_PARAM_FIX_NULL,
-			fixup_bridge_flags, fixup_free_init_flags},
+		{CMD_PARAM_STR|CMD_PARAM_OPT,
+			0, 0},
 		{CMD_PARAM_STR,0,0},
 		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},
 		{CMD_PARAM_VAR|CMD_PARAM_OPT, fixup_check_avp, 0},

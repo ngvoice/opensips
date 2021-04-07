@@ -56,6 +56,7 @@
 /* B2BL_BR_FLAGS constants */
 #define B2BL_BR_FLAG_NOTIFY			0x01
 #define B2BL_BR_FLAG_RETURN_AFTER_FAILURE	0x02
+#define B2BL_BR_FLAG_DONT_DELETE_BRIDGE_INITIATOR	0x04
 
 /* modes to write in db */
 #define NO_DB         0
@@ -92,6 +93,8 @@ struct b2b_bridge_params
 {
 	unsigned int flags;
 	unsigned int lifetime;
+	str *remote_entity;
+	unsigned int remote_entity_party;
 };
 
 enum pv_entity_field {
