@@ -852,6 +852,7 @@ int process_bridge_200OK(struct sip_msg* msg, str* extra_headers,
 			b2bl_delete_entity(bentity1, tuple, hash_index, 1);
 
 			tuple->bridge_entities[1] = entity;
+		
 			if (0 != b2bl_add_client(tuple, entity))
 				return -1;
 		}
@@ -996,6 +997,7 @@ int process_bridge_200OK(struct sip_msg* msg, str* extra_headers,
 			}
 			entity->no = 1;
 			b2bl_delete_entity(tuple->bridge_entities[2], tuple, hash_index, 1);
+		
 			if (0 != b2bl_add_client(tuple, entity))
 				return -1;
 			/* original destination connected in the second step */
@@ -2305,7 +2307,7 @@ int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params,
 	str *e1_to = NULL, *e2_to = NULL;
 	str *e1_proxy = NULL, *e2_proxy = NULL;
 	str *e1_dname = NULL, *e2_dname = NULL;
-	unsigned int hash_index, local_index;
+	unsigned int hash_index, local_index, remote_tuple_hash_index;
 	b2bl_tuple_t* tuple= NULL;
 	b2bl_tuple_t* cur_tuple= NULL;
 	str* b2bl_key;
@@ -2426,6 +2428,7 @@ int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params,
 		goto end;
 	}
 	tuple->lifetime = 60 + get_ticks();
+	LM_ERR("Key: %.*s (%p)\n", b2bl_key->len, b2bl_key->s, tuple);
 
 	if (params && params->s && params->len > 0) {
 		param_list = parse_csv_record(params);
@@ -2458,7 +2461,7 @@ int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params,
 
 	if (tuple->bridge_flags & B2BL_BR_FLAG_NOTIFY) {
 		if (remote_tuple) {
-			ret = b2bl_get_tuple_key(remote_tuple, &hash_index, &local_index);
+			ret = b2bl_get_tuple_key(remote_tuple, &remote_tuple_hash_index, &local_index);
 			if(ret < 0)
 			{
 				if (ret == -1)
@@ -2470,29 +2473,29 @@ int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params,
 				tuple->bridge_flags = 0;
 			} else {
 				/* extract the entity and delete the tuple */
-				lock_get(&b2bl_htable[hash_index].lock);
+				lock_get(&b2bl_htable[remote_tuple_hash_index].lock);
 
-				tuple = b2bl_search_tuple_safe(hash_index, local_index);
-				if(tuple == NULL)
+				cur_tuple = b2bl_search_tuple_safe(remote_tuple_hash_index, local_index);
+				if(cur_tuple == NULL)
 				{
 					LM_ERR("No entity found\n");
 					tuple->bridge_flags = 0;
 				} else {
 					LM_ERR("Found tuple\n");
-					if (!tuple->bridge_entities[remote_tuple_party] ||
-					tuple->bridge_entities[remote_tuple_party]->disconnected)
+					if (!cur_tuple->bridge_entities[remote_tuple_party] ||
+					cur_tuple->bridge_entities[remote_tuple_party]->disconnected)
 					{
 						LM_ERR("Can not notify requested entity [%p]\n",
-							tuple->bridge_entities[remote_tuple_party]);
+							cur_tuple->bridge_entities[remote_tuple_party]);
 						tuple->bridge_flags = 0;
 					} else {
 						LM_ERR("Found entity\n");
 						tuple->bridge_flags = B2BL_BR_FLAG_NOTIFY | B2BL_BR_FLAG_DONT_DELETE_BRIDGE_INITIATOR;
-						tuple->bridge_initiator = tuple->bridge_entities[remote_tuple_party];
-						process_bridge_notify(tuple->bridge_entities[remote_tuple_party], cur_route_ctx.hash_index, NULL);
+						tuple->bridge_initiator = cur_tuple->bridge_entities[remote_tuple_party];
+						process_bridge_notify(cur_tuple->bridge_entities[remote_tuple_party], remote_tuple_hash_index, NULL);
 					}
 				}
-				lock_release(&b2bl_htable[hash_index].lock);
+				lock_release(&b2bl_htable[remote_tuple_hash_index].lock);
 			}
 		} else {
 			lock_get(&b2bl_htable[cur_route_ctx.hash_index].lock);
@@ -2514,7 +2517,7 @@ int b2b_bridge_extern(struct sip_msg* msg, str *id, str * params,
 			lock_release(&b2bl_htable[cur_route_ctx.hash_index].lock);
 		}
 	}
-
+	LM_DBG("Flags: %u (NOTIFY: %u)\n", tuple->bridge_flags, B2BL_BR_FLAG_NOTIFY);
 
 	if (process_bridge_action(msg, tuple, hash_index, NULL, new_br_ent,
 		NULL, 0) < 0) {
