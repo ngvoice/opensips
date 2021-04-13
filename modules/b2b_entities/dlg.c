@@ -3068,8 +3068,8 @@ dummy_reply:
 					LM_DBG("Found require hdr\n");
 					if ( (hdr->body.len == 6 &&
 						strncmp(hdr->body.s, "100rel", 6)==0) ||
-					(hdr->body.len == 8 &&
-						strncmp(hdr->body.s, "100rel\r\n", 8)==0) )
+					(hdr->body.len > 6 &&
+						strncmp(hdr->body.s, "100rel", hdr->body.len)) )
 					{
 						LM_DBG("Found 100rel header\n");
 						break;
