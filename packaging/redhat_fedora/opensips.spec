@@ -48,6 +48,9 @@ BuildRequires:  subversion
 BuildRequires:  which
 BuildRequires:  mysql-devel
 BuildRequires:  postgresql-devel
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
 
 Requires: m4
 BuildRequires:  net-snmp-devel
@@ -372,13 +375,13 @@ serialization and de-serialization from JSON format. The script variable
 provides ways to access (from script) objects and arrays to add,replace or
 delete values from the script.
 
-%package  kafka-modules
+%package  kafka-module
 Summary:  Implementation of an Apache Kafka producer
 Group:    System Environment/Daemons
 Requires: %{name} = %{version}-%{release}
 BuildRequires: librdkafka-devel
 
-%description  kafka-modules
+%description  kafka-module
 OpenSIPS is a very fast and flexible SIP (RFC3261)
 server. Written entirely in C, OpenSIPS can handle thousands calls
 per second even on low-budget hardware.
@@ -1043,6 +1046,7 @@ fi
 %{_libdir}/opensips/modules/permissions.so
 %{_libdir}/opensips/modules/pike.so
 %{_libdir}/opensips/modules/proto_bin.so
+%{_libdir}/opensips/modules/proto_bins.so
 %{_libdir}/opensips/modules/proto_hep.so
 %{_libdir}/opensips/modules/proto_smpp.so
 %{_libdir}/opensips/modules/proto_ws.so
@@ -1075,6 +1079,7 @@ fi
 %{_libdir}/opensips/modules/uac_registrant.so
 %{_libdir}/opensips/modules/userblacklist.so
 %{_libdir}/opensips/modules/usrloc.so
+%{_libdir}/opensips/modules/wolfssl.so
 
 %doc docdir/README.acc
 %doc docdir/README.alias_db
