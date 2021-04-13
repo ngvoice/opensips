@@ -29,7 +29,7 @@
 #include "../../parser/hf.h"
 #include "../../str.h"
 #include "../../usr_avp.h"
-#include "../../lib/digest_auth/digest_auth.h"
+#include "rfc2617.h"
 
 
 typedef enum auth_result {
@@ -70,24 +70,13 @@ auth_result_t post_auth(struct sip_msg* _m, struct hdr_field* _h);
  * Calculate the response and compare with the given response string
  * Authorization is successful if this two strings are same
  */
-typedef int (*check_response_t)(const dig_cred_t* _cred, const str* _method,
-    const str* _msg_body, const HASHHEX* _ha1);
-int check_response(const dig_cred_t* _cred, const str* _method,
-    const str* _msg_body, const HASHHEX* _ha1);
+typedef int (*check_response_t)(dig_cred_t* _cred, str* _method,
+							str* _msg_body, char* _ha1);
+int check_response(dig_cred_t* _cred, str* _method,
+				str* _msg_body, char* _ha1);
 
-struct calc_HA1_arg {
-	int use_hashed;
-	alg_t alg;
-	union {
-		const struct digest_auth_credential *open;
-		const str *ha1;
-	} creds;
-	const str* nonce;
-	const str* cnonce;
-};
-
-typedef int (*calc_HA1_t)(const struct calc_HA1_arg *params, HASHHEX *_sess_key)
-    __attribute__ ((warn_unused_result));
+typedef void (*calc_HA1_t)(ha_alg_t _alg, str* _username, str* _realm,
+		str* _password, str* _nonce, str* _cnonce, HASHHEX _sess_key);
 
 /*
  * Strip the beginning of realm

@@ -38,6 +38,7 @@
 /*
  * Module parameters variables
  */
+extern str secret;            /* secret phrase used to generate nonce */
 extern unsigned int nonce_expire;      /* nonce expire interval */
 extern str rpid_prefix;       /* Remote-Party-ID prefix */
 extern str rpid_suffix;       /* Remote-Party-ID suffix */
@@ -53,6 +54,5 @@ extern int* sec_monit;
 extern int* second;
 extern int* next_index;
 extern int disable_nonce_check;
-extern struct nonce_context *ncp;
 
 #endif /* AUTH_MOD_H */

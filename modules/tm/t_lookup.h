@@ -68,7 +68,6 @@ typedef void (*tunrefcell_f)(struct cell *);
 
 
 /* function returns:
- *      -2 - reply not addressed to this server (anycast)
  *      -1 - transaction wasn't found
  *       1 - transaction found
  */

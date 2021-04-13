@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2020 Maksym Sobolyev
+ * Nonce related functions
+ *
+ * Copyright (C) 2001-2003 FhG Fokus
  *
  * This file is part of opensips, a free SIP server.
  *
@@ -18,16 +20,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-#ifndef _digest_auth_sha256_h
-#define _digest_auth_sha256_h
 
-#define HASHLEN_SHA256 32
-#define HASHHEXLEN_SHA256 (HASHLEN_SHA256 * 2)
+#ifndef NONCE_H
+#define NONCE_H
 
-typedef char HASH_SHA256[HASHLEN_SHA256];
-typedef char HASHHEX_SHA256[HASHHEXLEN_SHA256 + 1];
+#include "../../str.h"
+#include <time.h>
 
-extern const struct digest_auth_calc sha256_digest_calc;
-extern const struct digest_auth_calc sha256sess_digest_calc;
 
-#endif /* _digest_auth_sha256_h */
+/*
+ * Length of nonce string in bytes
+ */
+#define NONCE_LEN (16+32)
+
+
+/*
+ * Calculate nonce value
+ */
+void calc_nonce(char* _nonce, int _expires, int _index, str* _secret);
+
+
+/*
+ * Check nonce value received from UA
+ */
+int check_nonce(str* _nonce, str* _secret);
+
+
+/*
+ * Get expiry time from nonce string
+ */
+time_t get_nonce_expires(str* _nonce);
+
+/*
+ * Get index from nonce string
+ */
+int get_nonce_index(str* _nonce);
+
+/*
+ * Check if the nonce is stale
+ */
+int is_nonce_stale(str* _nonce);
+
+#endif /* NONCE_H */

@@ -44,9 +44,6 @@ enum trace_flags {TRACE_MESSAGE=(1<<0),
 				  TRACE_TRANSACTION=(1<<1),
 				  TRACE_DIALOG=(1<<2) };
 
-enum trace_control_flags {TRACE_C_CALLER=(1<<0),
-				  TRACE_C_CALLEE=(1<<1) };
-
 
 typedef struct st_db_struct {
 	str url;
@@ -107,9 +104,7 @@ typedef struct tlist_dyn_elem {
 } tlist_dyn_elem_t, *tlist_dyn_elem_p;
 
 typedef struct trace_instance {
-	str trace_attrs;
-	str forced_correlation_id;
-	int control_flags;
+	str *trace_attrs;
 	int trace_types;
 	tlist_elem_p trace_list;
 
