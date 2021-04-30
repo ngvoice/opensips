@@ -8,6 +8,7 @@ RUN /usr/sbin/build-deb.sh
 
 FROM debian:buster
 COPY --from=builder /tmp/deb/ /tmp/debs/
+RUN sed -i 's/deb.debian.org/ftp2.de.debian.org/g' /etc/apt/sources.list
 RUN export DEBIAN_FRONTEND=noninteractive && \
 apt-get update && \
 dpkg -i /tmp/debs/*.deb || true && \

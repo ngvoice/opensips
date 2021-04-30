@@ -542,7 +542,7 @@ int process_bridge_notify(b2bl_entity_id_t *entity, unsigned int hash_index, str
 	static str body = str_init("SIP/2.0 100 Trying");
 	static str hdrs = {buf, 0};
 
-	if (msg->first_line.type != SIP_REPLY) {
+	if (msg && msg->first_line.type != SIP_REPLY) {
 		LM_ERR("process_bridge_notify works only with replies!\n");
 		return -1;
 	}
@@ -1227,8 +1227,8 @@ int _b2b_handle_reply(struct sip_msg *msg, b2bl_tuple_t *tuple,
 		}
 
 		/* Reply from new bridge entity */
-		LM_DBG("About to send NOTIFY: status %i, entity = bridge_entities[1] %i, flags %u (NOTIFY %u), bridge_initiator %p\n", 
-			statuscode, (entity == tuple->bridge_entities[1])?1:0, tuple->bridge_flags, B2BL_BR_FLAG_NOTIFY, tuple->bridge_initiator);
+		LM_DBG("About to send NOTIFY: status %i, entity = bridge_entities[1] %i, flags %u (NOTIFY %u), bridge_initiator %p (%p, Type %d)\n", 
+			statuscode, (entity == tuple->bridge_entities[1])?1:0, tuple->bridge_flags, B2BL_BR_FLAG_NOTIFY, tuple->bridge_initiator, msg, msg->first_line.type);
 		if(statuscode >= 200 && entity == tuple->bridge_entities[1] &&
 			tuple->bridge_flags & B2BL_BR_FLAG_NOTIFY && tuple->bridge_initiator != 0
 			&& msg->first_line.type == SIP_REPLY)
