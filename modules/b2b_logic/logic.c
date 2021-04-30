@@ -1227,7 +1227,7 @@ int _b2b_handle_reply(struct sip_msg *msg, b2bl_tuple_t *tuple,
 		}
 
 		/* Reply from new bridge entity */
-		LM_ERR("About to send NOTIFY: status %i, entity = bridge_entities[1] %i, flags %u (NOTIFY %u), bridge_initiator %p\n", 
+		LM_DBG("About to send NOTIFY: status %i, entity = bridge_entities[1] %i, flags %u (NOTIFY %u), bridge_initiator %p\n", 
 			statuscode, (entity == tuple->bridge_entities[1])?1:0, tuple->bridge_flags, B2BL_BR_FLAG_NOTIFY, tuple->bridge_initiator);
 		if(statuscode >= 200 && entity == tuple->bridge_entities[1] &&
 			tuple->bridge_flags & B2BL_BR_FLAG_NOTIFY && tuple->bridge_initiator != 0
