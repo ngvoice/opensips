@@ -542,6 +542,11 @@ int process_bridge_notify(b2bl_entity_id_t *entity, unsigned int hash_index, str
 	static str body = str_init("SIP/2.0 100 Trying");
 	static str hdrs = {buf, 0};
 
+	if (msg->first_line.type != SIP_REPLY) {
+		LM_ERR("process_bridge_notify works only with replies!\n");
+		return -1;
+	}
+
 	memset(&req_data, 0, sizeof(b2b_req_data_t));
 	PREP_REQ_DATA(entity);
 	req_data.method = &method_notify;
@@ -1225,7 +1230,8 @@ int _b2b_handle_reply(struct sip_msg *msg, b2bl_tuple_t *tuple,
 		LM_ERR("About to send NOTIFY: status %i, entity = bridge_entities[1] %i, flags %u (NOTIFY %u), bridge_initiator %p\n", 
 			statuscode, (entity == tuple->bridge_entities[1])?1:0, tuple->bridge_flags, B2BL_BR_FLAG_NOTIFY, tuple->bridge_initiator);
 		if(statuscode >= 200 && entity == tuple->bridge_entities[1] &&
-			tuple->bridge_flags & B2BL_BR_FLAG_NOTIFY && tuple->bridge_initiator != 0)
+			tuple->bridge_flags & B2BL_BR_FLAG_NOTIFY && tuple->bridge_initiator != 0
+			&& msg->first_line.type == SIP_REPLY)
 		{
 			process_bridge_notify(tuple->bridge_initiator, cur_route_ctx.hash_index, msg);
 			LM_ERR("tuple->bridge_flags %u, B2BL_BR_FLAG_RETURN_AFTER_FAILURE = %u\n", tuple->bridge_flags, B2BL_BR_FLAG_RETURN_AFTER_FAILURE);
