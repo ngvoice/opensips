@@ -4709,7 +4709,7 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 	b2bl_entity_id_t *old_entity;
 	b2bl_entity_id_t *entity;
 	str* server_id;
-	str body, new_body = {0, 0};
+	str body, new_body = {0, 0}, contact = {0, 0};
 	str to_uri={NULL,0}, from_uri, from_dname;
 	b2b_req_data_t req_data;
 	b2b_rpl_data_t rpl_data;
@@ -4873,7 +4873,39 @@ int b2bl_bridge_msg(struct sip_msg* msg, str* key, int entity_no)
 		LM_ERR("Failed to get to or from from the message\n");
 		goto error;
 	}
-	server_id = b2b_api.server_new(msg, &tuple->local_contact,
+	LM_DBG("Contact / tuple: %.*s\n", tuple->local_contact.len, tuple->local_contact.s);
+
+	if (server_address.len > 0)
+	{
+		if (pv_printf_s(msg, server_address_pve, &contact) != 0)
+		{
+			LM_WARN("Failed to build contact from server address\n");
+			if (!msg || get_local_contact(msg->rcv.bind_address, NULL, &contact) < 0)
+			{
+				LM_ERR("Failed to build contact from received address\n");
+				goto error;
+			}
+		}
+	}
+	else
+	{
+		if(msg)
+		{
+			if (get_local_contact(msg->rcv.bind_address, NULL, &contact) < 0)
+			{
+				LM_ERR("Failed to build contact from received address\n");
+				goto error;
+			}
+		}
+	}
+	if (contact.len <= 0)
+	{
+		LM_ERR("Unable to define contact\n");
+		goto error;
+	}
+	LM_DBG("Contact: %.*s\n", contact.len, contact.s);
+
+	server_id = b2b_api.server_new(msg, &contact,
 			b2b_server_notify, &b2bl_mod_name, tuple->key);
 	if(server_id == NULL)
 	{
