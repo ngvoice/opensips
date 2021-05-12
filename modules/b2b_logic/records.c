@@ -99,7 +99,8 @@ b2bl_tuple_t* b2bl_insert_new(struct sip_msg* msg, unsigned int hash_index,
 	str* b2bl_key;
 	int size;
 	str extra_headers={0, 0};
-	str local_contact= server_address;
+
+	str local_contact= {0, 0};
 
 	if (server_address.len > 0)
 	{
