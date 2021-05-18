@@ -3083,7 +3083,7 @@ dummy_reply:
 					}
 					hdr = hdr->sibling;
 				}
-				if(hdr)
+				if(hdr && generate_prack)
 				{
 					str method={"PRACK", 5};
 					str extra_headers;
