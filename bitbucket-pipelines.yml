@@ -1,22 +1,65 @@
-# This is a sample build configuration for Docker.
-# Check our guides at https://confluence.atlassian.com/x/O1toN for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
 image: atlassian/default-image:2
+
+options:
+  docker: true
+
+definitions:
+  steps:
+    - step: &tag-master
+        name: Tag master commit
+        script:
+          - export VERSION_GIT=$(cat VERSION | head -1)
+          - git tag -am "Tagging new release ${VERSION_GIT}" "${VERSION_GIT}"
+          - git push origin "${VERSION_GIT}"
+    - step: &build-default
+        name: Build default
+        script:
+          - export IMAGE_NAME=dockerhub.ng-voice.com/opensips-base:$(echo $BITBUCKET_BRANCH | tr '/' '_')
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD dockerhub.ng-voice.com
+          - docker build -t $IMAGE_NAME .
+          - docker push $IMAGE_NAME
+    - step: &build
+        name: Build branches
+        script:
+          - export IMAGE_NAME=dockerhub.ng-voice.com/opensips-base:$(echo $BITBUCKET_BRANCH | tr '/' '_')-build-${BITBUCKET_BUILD_NUMBER}
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD dockerhub.ng-voice.com
+          - docker build -t $IMAGE_NAME .
+          - docker push $IMAGE_NAME
+    - step: &build-tag
+        name: Build tag
+        script:
+          - export IMAGE_NAME=dockerhub.ng-voice.com/opensips-base:${BITBUCKET_TAG}
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD dockerhub.ng-voice.com
+          - docker build -t $IMAGE_NAME .
+          - docker push $IMAGE_NAME
+    - step: &build-pr
+        name: Build pull request
+        script:
+          - export IMAGE_NAME=dockerhub.ng-voice.com/opensips-base:pr-${BITBUCKET_PR_ID}
+          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD dockerhub.ng-voice.com
+          - docker build -t $IMAGE_NAME .
+          - docker push $IMAGE_NAME
 
 pipelines:
   default:
-    - step:
-        services:
-          - docker
-        script: # Modify the commands below to build your repository.
-          # Set $DOCKER_HUB_USERNAME and $DOCKER_HUB_PASSWORD as environment variables in repository settings
-          - export IMAGE_NAME=dockerhub.ng-voice.com/opensips-base:$(echo $BITBUCKET_BRANCH | tr '/' '_')
-          # build the Docker image (this will use the Dockerfile in the root of the repo)
-          - docker build -t $IMAGE_NAME .
-          # authenticate with the Docker Hub registry
-          - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD dockerhub.ng-voice.com
-          # push the new Docker image to the Docker registry
-          - docker push $IMAGE_NAME
+    - step: *build-default
 
+  branches:
+    master:
+      - step: *tag-master
+    feature/*:
+      - step: *build
+    hotfix/*:
+      - step: *build
+    bugfix/*:
+      - step: *build
+    release/*:
+      - step: *build
+
+  tags:
+    '*':
+      - step: *build-tag
+
+  pull-requests:
+    '**':
+      - step: *build-pr
