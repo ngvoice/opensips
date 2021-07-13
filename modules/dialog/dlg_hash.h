@@ -67,6 +67,7 @@
 #define DLG_FLAG_WAS_CANCELLED			(1<<16)
 #define DLG_FLAG_RACE_CONDITION_OCCURRED	(1<<17)
 #define DLG_FLAG_SELF_EXTENDED_TIMEOUT		(1<<18)
+#define DLG_FLAG_SYNCED                     (1<<19)
 
 #define dlg_has_reinvite_pinging(dlg) \
 	(dlg->flags & DLG_FLAG_REINVITE_PING_CALLER || \
@@ -654,8 +655,8 @@ void state_changed_event_destroy(void);
 
 #define dlg_parse_db_id(_did, _h_entry, _h_id) \
 	do { \
-		(_h_entry) = (unsigned int)((_did) >> 32); \
-		(_h_id) = (unsigned int)((_did) & 0x00000000ffffffff); \
+		(_h_entry) = (unsigned int)((unsigned long long)(_did) >> 32); \
+		(_h_id) = (unsigned int)((unsigned long long)(_did) & 0xFFFFFFFFULL); \
 	} while(0)
 
 #endif

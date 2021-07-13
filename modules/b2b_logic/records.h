@@ -42,6 +42,7 @@ typedef struct b2bl_entity_id
 	str from_uri;
 	str from_dname;
 	str hdrs;
+	str adv_contact;
 	b2b_dlginfo_t* dlginfo;
 	int rejected;
 	int disconnected;
@@ -61,6 +62,7 @@ struct b2bl_new_entity {
 	str dest_uri;
 	str proxy;
 	str from_dname;
+	str adv_contact;
 	int avp_hdrs;
 	int avp_hdr_vals;
 };
@@ -113,6 +115,7 @@ typedef struct b2bl_tuple
 	int db_flag;
 	int repl_flag;  /* sent/received through entities replication */
 	struct b2b_ctx_val *vals;
+	struct b2b_tracer tracer;
 	b2bl_cback_f cbf;
 	unsigned int cb_mask;
 	void* cb_param;
@@ -198,8 +201,8 @@ str* b2bl_bridge_extern(struct b2b_params *init_params,
 void destroy_b2bl_htable(void);
 
 b2bl_entity_id_t* b2bl_create_new_entity(enum b2b_entity_type type, str* entity_id,
-		str* to_uri, str *proxy, str* from_uri,str* from_dname,str* ssid,str* hdrs,
-		struct sip_msg* msg);
+		str* to_uri, str *proxy, str* from_uri,str*from_dname, str* ssid, str* hdrs,
+		str *adv_ct, struct sip_msg* msg);
 
 void unchain_ent(b2bl_entity_id_t *ent, b2bl_entity_id_t **head);
 void b2bl_remove_single_entity(b2bl_entity_id_t *entity, b2bl_entity_id_t **head,
@@ -219,5 +222,7 @@ b2bl_entity_id_t* b2bl_search_entity(b2bl_tuple_t* tuple, str* key, int src,
 void b2bl_db_delete(b2bl_tuple_t* tuple);
 
 int store_ctx_value(struct b2b_ctx_val **vals, str *name, str *new_val);
+
+int b2bl_register_set_tracer_cb( b2bl_set_tracer_f f, unsigned int msg_flag_filter );
 
 #endif

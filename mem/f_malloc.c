@@ -62,15 +62,8 @@
 							F_MALLOC_OPTIMIZE_FACTOR-1)\
 					)
 
-#define F_MALLOC_LARGE_LIMIT    F_MALLOC_OPTIMIZE
-#define F_MALLOC_DEFRAG_LIMIT (F_MALLOC_LARGE_LIMIT * 5)
-#define F_MALLOC_DEFRAG_PERCENT 5
-
 static inline void free_minus(struct fm_block *fm, unsigned long size)
 {
-
-	if( size > F_MALLOC_LARGE_LIMIT )
-		fm->large_space -= size;
 
 	#if defined(DBG_MALLOC) || defined(STATISTICS)
 	fm->real_used+=size;
@@ -81,9 +74,6 @@ static inline void free_minus(struct fm_block *fm, unsigned long size)
 
 static inline void free_plus(struct fm_block *fm, unsigned long size)
 {
-
-	if( size > F_MALLOC_LARGE_LIMIT )
-		fm->large_space += size;
 
 	#if defined(DBG_MALLOC) || defined(STATISTICS)
 	fm->real_used-=size;
@@ -188,10 +178,11 @@ struct fm_block *fm_malloc_init(char *address, unsigned long size, char *name)
 
 	/* make address and size multiple of 8*/
 	start=(char*)ROUNDUP((unsigned long) address);
-	LM_DBG("F_OPTIMIZE=%lu, /ROUNDTO=%lu\n",
-			F_MALLOC_OPTIMIZE, F_MALLOC_OPTIMIZE/ROUNDTO);
-	LM_DBG("F_HASH_SIZE=%lu, fm_block size=%lu\n",
-			F_HASH_SIZE, (long)sizeof(struct fm_block));
+	LM_DBG("F_OPTIMIZE=%lu, /ROUNDTO=%lu, %lu-bytes aligned\n",
+			F_MALLOC_OPTIMIZE, F_MALLOC_OPTIMIZE/ROUNDTO,
+			(unsigned long)ROUNDTO);
+	LM_DBG("F_HASH_SIZE=%lu, fm_block size=%zu, frag_size=%zu\n",
+			F_HASH_SIZE, sizeof(struct fm_block), sizeof(struct fm_frag));
 	LM_DBG("params (%p, %lu), start=%p\n", address, size, start);
 
 	if (size<(unsigned long)(start-address)) return 0;
@@ -231,14 +222,7 @@ struct fm_block *fm_malloc_init(char *address, unsigned long size, char *name)
 
 	/* link initial fragment into the free list*/
 
-	fm->large_space = 0;
-	fm->large_limit = fm->size / 100 * F_MALLOC_DEFRAG_PERCENT;
-
-	if( fm->large_limit < F_MALLOC_DEFRAG_LIMIT )
-		fm->large_limit = F_MALLOC_DEFRAG_LIMIT;
-
 	fm_insert_free(fm, fm->first_frag);
-
 
 	return fm;
 }

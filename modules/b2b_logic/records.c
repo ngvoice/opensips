@@ -30,11 +30,29 @@
 
 #include "../../mem/shm_mem.h"
 #include "../../ut.h"
+#include "../../parser/parse_uri.h"
 #include "../../pt.h"
 #include "../presence/hash.h"
 #include "../presence/utils_func.h"
 #include "records.h"
 #include "entity_storage.h"
+
+static b2bl_set_tracer_f set_tracer_func = NULL;
+static unsigned int tracer_msg_flag_filter = -1;
+
+int b2bl_register_set_tracer_cb( b2bl_set_tracer_f f,
+												unsigned int msg_flag_filter )
+{
+	if (set_tracer_func!=NULL) {
+		LM_BUG("b2bl tracing function registered more than once\n");
+		return -1;
+	}
+	set_tracer_func = f;
+	tracer_msg_flag_filter = msg_flag_filter;
+
+	return 0;
+}
+
 
 static void _print_entity(int index, b2bl_entity_id_t* e, int level)
 {
@@ -99,6 +117,8 @@ b2bl_tuple_t* b2bl_insert_new(struct sip_msg* msg, unsigned int hash_index,
 	str* b2bl_key;
 	int size;
 	str extra_headers={0, 0};
+	struct sip_uri *ct_uri = NULL;
+	str *ct_user = NULL;
 
 	str local_contact= {0, 0};
 
@@ -116,12 +136,18 @@ b2bl_tuple_t* b2bl_insert_new(struct sip_msg* msg, unsigned int hash_index,
 	}
 	else
 	{
-		if(msg)
-		{
-			if (get_local_contact(msg->rcv.bind_address, NULL, &local_contact) < 0)
+		if(msg) {
+			if (contact_user && msg->to) {
+				ct_uri = parse_to_uri(msg);
+				ct_user = &ct_uri->user;
+			}
+			if (get_local_contact(msg->rcv.bind_address, ct_user, &local_contact) < 0)
 			{
-				LM_ERR("Failed to build contact from received address\n");
-				goto error;
+				if (get_local_contact(msg->rcv.bind_address, NULL, &local_contact) < 0)
+				{
+					LM_ERR("Failed to build contact from received address\n");
+					goto error;
+				}
 			}
 		}
 	}
@@ -324,6 +350,9 @@ b2bl_tuple_t* b2bl_insert_new(struct sip_msg* msg, unsigned int hash_index,
 
 	tuple->req_routeid = init_params->req_routeid;
 	tuple->reply_routeid = init_params->reply_routeid;
+
+	if (set_tracer_func && msg->msg_flags&tracer_msg_flag_filter)
+		tuple->tracer = *set_tracer_func();
 
 	LM_DBG("new tuple [%p]->[%.*s]\n", tuple, b2bl_key->len, b2bl_key->s);
 
@@ -698,6 +727,9 @@ void b2bl_delete(b2bl_tuple_t* tuple, unsigned int hash_index,
 		tuple->vals = tuple->vals->next;
 		shm_free(v);
 	}
+
+	if (tuple->tracer.param && tuple->tracer.f_freep)
+		tuple->tracer.f_freep( tuple->tracer.param );
 
 	shm_free(tuple);
 }

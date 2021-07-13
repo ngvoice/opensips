@@ -61,7 +61,7 @@ static str *get_cred_column(alg_t alg)
 
 	if (calc_ha1) {
 		rval = &pass_column;
-		CON_PS_REFERENCE(auth_db_handle) = &auth_ha1_ps;
+		CON_SET_CURR_PS(auth_db_handle, &auth_ha1_ps);
 		return rval;
 	}
 	switch(alg) {
@@ -69,17 +69,17 @@ static str *get_cred_column(alg_t alg)
 	case ALG_MD5:
 	case ALG_MD5SESS:
 		rval = &pass_column;
-		CON_PS_REFERENCE(auth_db_handle) = &auth_ha1_ps;
+		CON_SET_CURR_PS(auth_db_handle, &auth_ha1_ps);
 		break;
 	case ALG_SHA256:
 	case ALG_SHA256SESS:
 		rval = &hash_column_sha256;
-		CON_PS_REFERENCE(auth_db_handle) = &auth_ha1_sha256_ps;
+		CON_SET_CURR_PS(auth_db_handle, &auth_ha1_sha256_ps);
 		break;
 	case ALG_SHA512_256:
 	case ALG_SHA512_256SESS:
 		rval = &hash_column_sha512t256;
-		CON_PS_REFERENCE(auth_db_handle) = &auth_ha1_sha512t256_ps;
+		CON_SET_CURR_PS(auth_db_handle, &auth_ha1_sha512t256_ps);
 		break;
 	default:
 		rval = NULL;
@@ -98,6 +98,11 @@ static inline int get_ha1(dig_cred_t* digest, const str* _domain,
 	struct username* _username = &digest->username;
 
 	int n, nc;
+
+	if (auth_dbf.use_table(auth_db_handle, _table) < 0) {
+		LM_ERR("failed to use_table\n");
+		goto e0;
+	}
 
 	col = pkg_malloc(sizeof(*col) * (credentials_n + 1));
 	if (col == NULL) {
@@ -128,11 +133,6 @@ static inline int get_ha1(dig_cred_t* digest, const str* _domain,
 		VAL_STR(vals + 1) = _username->domain;
 	} else {
 		VAL_STR(vals + 1) = *_domain;
-	}
-
-	if (auth_dbf.use_table(auth_db_handle, _table) < 0) {
-		LM_ERR("failed to use_table\n");
-		goto e1;
 	}
 
 	n = (use_domain ? 2 : 1);

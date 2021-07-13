@@ -112,6 +112,8 @@ int profile_repl_cluster = 0;
 str dlg_repl_cap = str_init("dialog-dlg-repl");
 str prof_repl_cap = str_init("dialog-prof-repl");
 
+int cluster_auto_sync = 1;
+
 static int pv_get_dlg_count( struct sip_msg *msg, pv_param_t *param,
 		pv_value_t *res);
 
@@ -331,6 +333,7 @@ static param_export_t mod_params[]={
 	{ "replicate_profiles_check", INT_PARAM, &repl_prof_timer_check },
 	{ "replicate_profiles_buffer",INT_PARAM, &repl_prof_buffer_th   },
 	{ "replicate_profiles_expire",INT_PARAM, &repl_prof_timer_expire},
+	{ "cluster_auto_sync",        INT_PARAM, &cluster_auto_sync     },
 	{ 0,0,0 }
 };
 
@@ -381,6 +384,7 @@ static mi_export_t mi_cmds[] = {
 	},
 	{ "dlg_cluster_sync", 0, 0, 0, {
 		{mi_sync_cl_dlg, {0}},
+		{mi_sync_cl_dlg, {"sharing_tag", 0}},
 		{EMPTY_MI_RECIPE}}
 	},
 	{ "profile_get_size", 0, 0, 0, {
@@ -467,7 +471,8 @@ static module_dependency_t *get_deps_db_mode(param_export_t *param)
 
 static dep_export_t deps = {
 	{ /* OpenSIPS module dependencies */
-		{ MOD_TYPE_DEFAULT, "tm", DEP_ABORT },
+		/* since dialog registers a tm "unref" callback, tm must destroy 1st */
+		{ MOD_TYPE_DEFAULT, "tm", DEP_ABORT|DEP_REVERSE_DESTROY },
 		{ MOD_TYPE_NULL, NULL, 0 },
 	},
 	{ /* modparam dependencies */

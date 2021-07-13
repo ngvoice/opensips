@@ -59,6 +59,7 @@
 #include "mod_fix.h"
 #include "script_var.h"
 #include "xlog.h"
+#include "cfg_pp.h"
 
 #include <string.h>
 
@@ -951,8 +952,8 @@ int do_action(struct action* a, struct sip_msg* msg)
 
 			if ((ret = get_cmd_fixups(msg, cmd->params, a->elem, cmdp,
 				tmp_vals)) < 0) {
-				LM_ERR("Failed to get fixups for command <%s>\n",
-					cmd->name);
+				LM_ERR("Failed to get fixups for command <%s> in %s, line %d\n",
+					cmd->name, a->file, a->line);
 				break;
 			}
 
@@ -962,8 +963,8 @@ int do_action(struct action* a, struct sip_msg* msg)
 				cmdp[6],cmdp[7]);
 
 			if (free_cmd_fixups(cmd->params, a->elem, cmdp) < 0) {
-				LM_ERR("Failed to free fixups for command <%s>\n",
-					cmd->name);
+				LM_ERR("Failed to free fixups for command <%s> in %s, line %d\n",
+					cmd->name, a->file, a->line);
 				break;
 			}
 
@@ -984,8 +985,8 @@ int do_action(struct action* a, struct sip_msg* msg)
 
 				if ((ret = get_cmd_fixups(msg, acmd->params, aitem->elem, cmdp,
 					tmp_vals)) < 0) {
-					LM_ERR("Failed to get fixups for async command <%s>\n",
-						acmd->name);
+					LM_ERR("Failed to get fixups for async command <%s> in %s,"
+					       " line %d\n", acmd->name, a->file, a->line);
 					break;
 				}
 
@@ -995,8 +996,8 @@ int do_action(struct action* a, struct sip_msg* msg)
 					action_flags |= ACT_FL_TBCONT;
 
 				if (free_cmd_fixups(acmd->params, aitem->elem, cmdp) < 0) {
-					LM_ERR("Failed to free fixups for command <%s>\n",
-						acmd->name);
+					LM_ERR("Failed to free fixups for async command <%s> in %s,"
+					       " line %d\n", acmd->name, a->file, a->line);
 					break;
 				}
 			}
@@ -1018,16 +1019,16 @@ int do_action(struct action* a, struct sip_msg* msg)
 
 				if ((ret = get_cmd_fixups(msg, acmd->params, aitem->elem,
 					cmdp, tmp_vals)) < 0) {
-					LM_ERR("Failed to get fixups for async command <%s>\n",
-						acmd->name);
+					LM_ERR("Failed to get fixups for launch command <%s> in %s,"
+					       " line %d\n", acmd->name, a->file, a->line);
 					break;
 				}
 
 				ret = async_script_launch( msg, aitem, a->elem[1].u.number, cmdp);
 
 				if (free_cmd_fixups(acmd->params, aitem->elem, cmdp) < 0) {
-					LM_ERR("Failed to free fixups for command <%s>\n",
-						acmd->name);
+					LM_ERR("Failed to free fixups for launch command <%s> in %s,"
+					       " line %d\n", acmd->name, a->file, a->line);
 					break;
 				}
 			}
@@ -1201,6 +1202,13 @@ static const char *_sip_msg_buf =
 "CSeq: 1 DUMMY\r\n\r\n";
 static struct sip_msg* dummy_static_req= NULL;
 static int dummy_static_in_used = 0;
+
+int is_dummy_sip_msg(struct sip_msg *req)
+{
+	if (req && req->buf==_sip_msg_buf)
+		return 0;
+	return -1;
+}
 
 struct sip_msg* get_dummy_sip_msg(void)
 {

@@ -52,7 +52,8 @@ static int mod_init(void);
 static int proto_tcp_init(struct proto_info *pi);
 static int proto_tcp_init_listener(struct socket_info *si);
 static int proto_tcp_send(struct socket_info* send_sock,
-		char* buf, unsigned int len, union sockaddr_union* to, int id);
+		char* buf, unsigned int len, union sockaddr_union* to,
+		unsigned int id);
 inline static int _tcp_write_on_socket(struct tcp_connection *c, int fd,
 		char *buf, int len);
 
@@ -347,8 +348,8 @@ inline static int _tcp_write_on_socket(struct tcp_connection *c, int fd,
 
 /*! \brief Finds a tcpconn & sends on it */
 static int proto_tcp_send(struct socket_info* send_sock,
-											char* buf, unsigned int len,
-											union sockaddr_union* to, int id)
+									char* buf, unsigned int len,
+									union sockaddr_union* to, unsigned int id)
 {
 	struct tcp_connection *c;
 	struct ip_addr ip;
@@ -366,9 +367,9 @@ static int proto_tcp_send(struct socket_info* send_sock,
 	if (to){
 		su2ip_addr(&ip, to);
 		port=su_getport(to);
-		n = tcp_conn_get(id, &ip, port, PROTO_TCP, NULL, &c, &fd);
+		n = tcp_conn_get(id, &ip, port, PROTO_TCP, NULL, &c, &fd, send_sock);
 	}else if (id){
-		n = tcp_conn_get(id, 0, 0, PROTO_NONE, NULL, &c, &fd);
+		n = tcp_conn_get(id, 0, 0, PROTO_NONE, NULL, &c, &fd, NULL);
 	}else{
 		LM_CRIT("tcp_send called with null id & to\n");
 		get_time_difference(get,tcpthreshold,tcp_timeout_con_get);

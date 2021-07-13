@@ -179,7 +179,7 @@ struct multi_str{
 	char *s;
 	struct multi_str* next;
 };
-#else 
+#else
 static struct multi_str *tmp_mod;
 #endif
 
@@ -284,6 +284,7 @@ extern int cfg_parse_only_routes;
 %token ENABLE_ASSERTS
 %token ABORT_ON_ASSERT
 %token LOGLEVEL
+%token LOGSTDOUT
 %token LOGSTDERROR
 %token LOGFACILITY
 %token LOGNAME
@@ -337,7 +338,6 @@ extern int cfg_parse_only_routes;
 %token TCP_WORKERS
 %token TCP_CONNECT_TIMEOUT
 %token TCP_CON_LIFETIME
-%token TCP_LISTEN_BACKLOG
 %token TCP_SOCKET_BACKLOG
 %token TCP_MAX_CONNECTIONS
 %token TCP_NO_NEW_CONN_BFLAG
@@ -742,8 +742,12 @@ assign_stm: LOGLEVEL EQUAL snumber { IFOR();
 			}
 		| DEBUG_MODE EQUAL error
 			{ yyerror("boolean value expected for debug_mode"); }
-		| LOGSTDERROR EQUAL NUMBER 
-			/* in config-check or debug mode we force logging 
+		| LOGSTDOUT EQUAL NUMBER
+			/* may be useful when integrating 3rd party libraries */
+			{ IFOR(); log_stdout=$3; }
+		| LOGSTDOUT EQUAL error { yyerror("boolean value expected"); }
+		| LOGSTDERROR EQUAL NUMBER
+			/* in config-check or debug mode we force logging
 			 * to standard error */
 			{ IFOR(); if (!config_check && !debug_mode) log_stderr=$3; }
 		| LOGSTDERROR EQUAL error { yyerror("boolean value expected"); }
@@ -970,11 +974,6 @@ assign_stm: LOGLEVEL EQUAL snumber { IFOR();
 				tcp_con_lifetime=$3;
 		}
 		| TCP_CON_LIFETIME EQUAL error { yyerror("number expected"); }
-		| TCP_LISTEN_BACKLOG EQUAL NUMBER { IFOR();
-				warn("tcp_listen_backlog is deprecated, use tcp_socket_backlog");
-				tcp_socket_backlog=$3;
-		}
-		| TCP_LISTEN_BACKLOG EQUAL error { yyerror("number expected"); }
 		| TCP_SOCKET_BACKLOG EQUAL NUMBER { IFOR();
 				tcp_socket_backlog=$3;
 		}
@@ -1117,7 +1116,7 @@ assign_stm: LOGLEVEL EQUAL snumber { IFOR();
 								}
 							}
 
-							mem_free_idx++;	
+							mem_free_idx++;
 
 							if(alloc_group_stat()){
 								YYABORT;
@@ -2256,7 +2255,7 @@ static void yyerror(char* s)
 	cfg_dump_backtrace();
 	LM_CRIT("parse error in %s:%d:%d-%d: %s\n",
 			get_cfg_file_name, line, startcolumn, column, s);
-	cfg_dump_context(get_cfg_file_name, line, startcolumn, column);
+	_cfg_dump_context(get_cfg_file_name, line, startcolumn, column, 1);
 	cfg_errors++;
 }
 

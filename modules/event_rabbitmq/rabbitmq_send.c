@@ -37,6 +37,8 @@
 /* used to communicate with the sending process */
 static int rmq_pipe[2];
 
+str rmq_static_holder = str_init(RMQ_DEFAULT_UP);
+
 /* creates communication pipe */
 int rmq_create_pipe(void)
 {
@@ -192,16 +194,11 @@ static int rmq_error(char const *context, amqp_rpc_reply_t x)
 
 void rmq_free_param(rmq_params_t *rmqp)
 {
-	/* XXX: hack to make clang happy, because it _always_
-	 * warns when comparing two char * (even casted to void *)
-	 */
-	static void *dummy_holder = RMQ_DEFAULT_UP;
-
 	if ((rmqp->flags & RMQ_PARAM_USER) && rmqp->user.s &&
-			rmqp->user.s != dummy_holder)
+			rmqp->user.s != rmq_static_holder.s)
 		shm_free(rmqp->user.s);
 	if ((rmqp->flags & RMQ_PARAM_PASS) && rmqp->pass.s &&
-			rmqp->pass.s != dummy_holder)
+			rmqp->pass.s != rmq_static_holder.s)
 		shm_free(rmqp->pass.s);
 	if ((rmqp->flags & RMQ_PARAM_RKEY) && rmqp->routing_key.s)
 		shm_free(rmqp->routing_key.s);
@@ -461,9 +458,16 @@ static int rmq_sendmsg(rmq_send_t *rmqs)
 	rmq_params_t * rmqp = (rmq_params_t *)rmqs->sock->params;
 	int ret,rtrn;
 	int re_publish = 0;
+	amqp_basic_properties_t props;
 
 	if (!(rmqp->flags & RMQ_PARAM_CONN))
 		return 0;
+
+	if (rmqp->flags & RMQ_PARAM_PERS) {
+		memset(&props, 0, sizeof props);
+		props.delivery_mode = 2;
+		props._flags |= AMQP_BASIC_DELIVERY_MODE_FLAG;
+	}
 	
 	/* all checks should be already done */
 	ret = amqp_basic_publish(rmqp->conn,
@@ -474,7 +478,7 @@ static int rmq_sendmsg(rmq_send_t *rmqs)
 			amqp_cstring_bytes(rmqp->routing_key.s),
 			0,
 			0,
-			0,
+			((rmqp->flags & RMQ_PARAM_PERS)?&props:0),
 			amqp_cstring_bytes(rmqs->msg));
 
 	rtrn = amqp_check_status(rmqp, ret, &re_publish);
@@ -493,7 +497,7 @@ static int rmq_sendmsg(rmq_send_t *rmqs)
 				amqp_cstring_bytes(rmqp->routing_key.s),
 				0,
 				0,
-				0,
+				((rmqp->flags & RMQ_PARAM_PERS)?&props:0),
 				amqp_cstring_bytes(rmqs->msg));
 		rtrn = amqp_check_status(rmqp, ret, &re_publish);
 	}

@@ -123,7 +123,7 @@ mi_response_t *init_mi_result_number(double value)
 {
 	mi_item_t *item;
 
-	return _init_mi_result(&item, cJSON_String, value, NULL, 0);
+	return _init_mi_result(&item, cJSON_Number, value, NULL, 0);
 }
 
 mi_response_t *init_mi_result_bool(int b)
@@ -360,6 +360,9 @@ void free_shm_mi_item(mi_item_t *item)
 static mi_item_t * _get_mi_param(const mi_params_t *params, char *name)
 {
 	int i;
+
+	if (!params->item)
+		return NULL;
 
 	if (MI_ITEM_IS_ARRAY(params->item)) {
 		for (i = 0; params->list[i]; i++)

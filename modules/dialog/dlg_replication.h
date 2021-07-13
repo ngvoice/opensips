@@ -45,13 +45,15 @@ extern struct clusterer_binds clusterer_api;
 
 extern str shtag_dlg_val;
 
+extern int cluster_auto_sync;
+
 void replicate_dialog_created(struct dlg_cell *dlg);
 void replicate_dialog_updated(struct dlg_cell *dlg);
 void replicate_dialog_deleted(struct dlg_cell *dlg);
 void replicate_dialog_cseq_updated(struct dlg_cell *dlg, int leg);
 
 int dlg_replicated_create(bin_packet_t *packet, struct dlg_cell *cell, str *ftag,
-							str *ttag, int safe);
+							str *ttag, int safe, int from_sync);
 int dlg_replicated_update(bin_packet_t *packet);
 int dlg_replicated_delete(bin_packet_t *packet);
 

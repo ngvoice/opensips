@@ -118,11 +118,11 @@ void *fm_malloc(struct fm_block *fm, unsigned long size,
 	/* not found, bad! */
 
 #if defined(DBG_MALLOC) || defined(STATISTICS)
-	LM_WARN("not enough continuous free %s memory (%ld bytes left, need %lu), attempting " \
+	LM_WARN("not enough contiguous free %s memory (%ld bytes left, need %lu), attempting " \
 			"defragmentation... please increase the \"-%s\" command line parameter!\n",
 			fm->name, fm->size - fm->real_used, size, fm->name[0] == 'p' ? "M" : "m");
 #else
-	LM_WARN("not enough continuous free %s memory (need %lu), attempting defragmentation... " \
+	LM_WARN("not enough contiguous free %s memory (need %lu), attempting defragmentation... " \
 			"please increase the \"-%s\" command line parameter!\n",
 			fm->name, fm->size - fm->real_used, size, fm->name[0] == 'p' ? "M" : "m");
 #endif
@@ -241,16 +241,9 @@ void fm_free(struct fm_block *fm, void *p, const char *file,
 	        f->file, f->func, f->line);
 #endif
 
-join:
-
-	if( fm->large_limit < fm->large_space )
-		goto no_join;
-
+	/* attempt to join with a next fragment that also happens to be free */
 	n = FRAG_NEXT(f);
-
-	if (((char*)n < (char*)fm->last_frag) &&  frag_is_free(n) )
-	{
-
+	if (((char*)n < (char*)fm->last_frag) &&  frag_is_free(n)) {
 		fm_remove_free(fm, n);
 		/* join */
 		f->size += n->size + FRAG_OVERHEAD;
@@ -259,11 +252,7 @@ join:
 		//fm->real_used -= FRAG_OVERHEAD;
 		fm->used += FRAG_OVERHEAD;
 		#endif
-
-		goto join;
 	}
-
-no_join:
 
 #ifdef DBG_MALLOC
 	f->file = file;
@@ -505,7 +494,6 @@ void fm_status(struct fm_block *fm)
 
 	}
 	LM_GEN1(memdump, "TOTAL: %6d free fragments = %6lu free bytes\n", i, size);
-	LM_GEN1(memdump, "TOTAL: %ld large bytes\n", fm->large_space );
 	LM_GEN1(memdump, "TOTAL: %u overhead\n", (unsigned int)FRAG_OVERHEAD );
 	LM_GEN1(memdump, "-----------------------------\n");
 }

@@ -316,6 +316,24 @@ modparam("b2b_logic", "max_duration", 7200)
 		</example>
 	</section>
 
+	<section id="param_contact_user" xreflabel="contact_user">
+		<title><varname>contact_user</varname> (int)</title>
+		<para>
+			If set to 1, adds user from From: header to generated Contact:
+		</para>
+		<para>
+		<emphasis>Default value is <quote>0</quote>.</emphasis>
+		</para>
+		<example>
+		<title>Set <varname>contact_user</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("b2b_logic", "contact_user", 1)
+...
+	</programlisting>
+		</example>
+	</section>
+
 	<section id="param_b2bl_from_spec_param" xreflabel="b2bl_from_spec_param">
 		<title><varname>b2bl_from_spec_param</varname> (string)</title>
 		<para>
@@ -472,7 +490,7 @@ modparam("b2b_logic", "b2bl_th_init_timeout", 60)
 				<emphasis>flags (string, optional)</emphasis> - meanings of the flags is as follows:
 				<itemizedlist>
 					<listitem><para>
-					<emphasis>t[nn]</emphasis> - Call setup timeout for topology hiding scenario.
+					<emphasis>t[nn]</emphasis> - Call setup timeout. 0 sets timeout to max_duration value.
 					Example: t300.
 					</para></listitem>
 					<listitem><para>
@@ -539,7 +557,8 @@ if(is_method("INVITE") &amp;&amp; !has_totag() &amp;&amp; prepaid_user()) {
 
 	<section id="func_b2b_server_new" xreflabel="b2b_server_new()">
 		<title>
-		<function moreinfo="none">b2b_server_new(id, [extra_hdrs], [extra_hdr_bodies])</function>
+		<function moreinfo="none">b2b_server_new(id, [adv_contact], [extra_hdrs],
+			[extra_hdr_bodies])</function>
 		</title>
 		<para>
 			This function creates a new server entity (dialog where OpenSIPS acts as a UAS)
@@ -551,6 +570,10 @@ if(is_method("INVITE") &amp;&amp; !has_totag() &amp;&amp; prepaid_user()) {
 			<listitem><para>
 				<emphasis>id (string)</emphasis> - ID used to reference this entity
 				in further B2B actions.
+			</para></listitem>
+			<listitem><para>
+				<emphasis>adv_contact (string, optional)</emphasis> - Contact header to
+				advertise in generated messages.
 			</para></listitem>
 			<listitem><para>
 				<emphasis>extra_hdrs (var, optioanl)</emphasis> - AVP variable holding a list
@@ -583,7 +606,7 @@ if(is_method("INVITE") &amp;&amp; !has_totag()) {
 	<section id="func_b2b_client_new" xreflabel="b2b_client_new()">
 		<title>
 		<function moreinfo="none">b2b_client_new(id, dest_uri, [proxy], [from_dname],
-			[extra_hdrs], [extra_hdr_bodies])</function>
+			[adv_contact], [extra_hdrs], [extra_hdr_bodies])</function>
 		</title>
 		<para>
 			This function creates a new client entity (dialog where OpenSIPS acts as a UAC)
@@ -607,6 +630,10 @@ if(is_method("INVITE") &amp;&amp; !has_totag()) {
 			<listitem><para>
 				<emphasis>from_dname (string, optional)</emphasis> - Display name to
 				use in the From header.
+			</para></listitem>
+			<listitem><para>
+				<emphasis>adv_contact (string, optional)</emphasis> - Contact header to
+				advertise in generated messages.
 			</para></listitem>
 			<listitem><para>
 				<emphasis>extra_hdrs (var, optional)</emphasis> - AVP variable holding a list

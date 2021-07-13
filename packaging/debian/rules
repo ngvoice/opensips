@@ -53,7 +53,8 @@ ALL_MODPKG_LIST := \
 	PRESENCE XMLRPC PERL SNMPSTATS XMPP CROUTE BERKELEY LDAP \
 	GEOIP REGEX IDENTITY B2BUA DBHTTP DIALPLAN MEMCACHED JSON \
 	REDIS RABBITMQ HTTP COMPRESSION EMERGENCY \
-	PROTO_TLS PROTO_WSS TLS_MGM REST_CLIENT LUA \
+	PROTO_TLS PROTO_WSS TLS_MGM TLS_OPENSSL TLS_WOLFSSL \
+	REST_CLIENT LUA \
 	SQLITE CGRATES XML SIPREC PYTHON UUID STIR_SHAKEN \
 	PROMETHEUS KAFKA
 # add SCTP only on linux systems
@@ -69,6 +70,16 @@ ifeq ($(MAJOR_RELEASE), unstable)
 endif
 
 # use a dummy architecture for the packages we do not want to build
+ifeq ($(shell dpkg-vendor --derives-from Debian && echo yes),yes)
+	DIAMETER_RELEASE=10
+endif
+ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
+	DIAMETER_RELEASE=20
+endif
+ifeq ($(shell test $(MAJOR_RELEASE) -ge $(DIAMETER_RELEASE); echo $$?),0)
+	ALL_MODPKG_LIST += DIAMETER
+endif
+
 ifeq ($(shell dpkg-vendor --derives-from Debian && echo yes),yes)
 	LIBMONGOC_MAJOR_RELEASE=9
 endif
@@ -112,6 +123,9 @@ CPL_MOD_PATH=$(addprefix modules/, $(CPL_MODULES))
 RADIUS_PKGNAME = opensips-radius-modules
 RADIUS_MODULES = aaa_radius peering
 RADIUS_MOD_PATH=$(addprefix modules/, $(RADIUS_MODULES))
+DIAMETER_PKGNAME = opensips-diameter-module
+DIAMETER_MODULES = aaa_diameter
+DIAMETER_MOD_PATH=$(addprefix modules/, $(DIAMETER_MODULES))
 PRESENCE_PKGNAME = opensips-presence-modules
 PRESENCE_MODULES = presence presence_callinfo presence_dialoginfo presence_xml presence_mwi presence_xcapdiff presence_dfks pua pua_bla pua_dialoginfo pua_mi pua_usrloc pua_xmpp rls xcap xcap_client
 PRESENCE_MOD_PATH=$(addprefix modules/, $(PRESENCE_MODULES))
@@ -146,7 +160,7 @@ IDENTITY_PKGNAME = opensips-identity-module
 IDENTITY_MODULES = identity
 IDENTITY_MOD_PATH=$(addprefix modules/, $(IDENTITY_MODULES))
 B2BUA_PKGNAME = opensips-b2bua-module
-B2BUA_MODULES = b2b_entities b2b_logic b2b_logic_xml
+B2BUA_MODULES = b2b_logic_xml
 B2BUA_MOD_PATH=$(addprefix modules/, $(B2BUA_MODULES))
 DBHTTP_PKGNAME = opensips-dbhttp-module
 DBHTTP_MODULES = db_http
@@ -190,6 +204,12 @@ PROTO_SCTP_MOD_PATH=$(addprefix modules/, $(PROTO_SCTP_MODULES))
 PROTO_TLS_PKGNAME = opensips-tls-module
 PROTO_TLS_MODULES = proto_tls
 PROTO_TLS_MOD_PATH=$(addprefix modules/, $(PROTO_TLS_MODULES))
+TLS_OPENSSL_PKGNAME = opensips-tls-openssl-module
+TLS_OPENSSL_MODULES = tls_openssl
+TLS_OPENSSL_MOD_PATH=$(addprefix modules/, $(TLS_OPENSSL_MODULES))
+TLS_WOLFSSL_PKGNAME = opensips-tls-wolfssl-module
+TLS_WOLFSSL_MODULES = tls_wolfssl
+TLS_WOLFSSL_MOD_PATH=$(addprefix modules/, $(TLS_WOLFSSL_MODULES))
 PROTO_WSS_PKGNAME = opensips-wss-module
 PROTO_WSS_MODULES = proto_wss
 PROTO_WSS_MOD_PATH=$(addprefix modules/, $(PROTO_WSS_MODULES))

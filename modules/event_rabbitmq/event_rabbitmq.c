@@ -409,6 +409,9 @@ static evi_reply_sock* rmq_parse(str socket)
 							goto err;
 						param->tls_dom_name.len--;
 						param->flags |= RMQ_PARAM_TLS;
+					} else if (it->s.len == RMQ_PERSISTENT_LEN &&
+						!memcmp(it->s.s, RMQ_PERSISTENT_S, RMQ_PERSISTENT_LEN)) {
+						param->flags |= RMQ_PARAM_PERS;
 					} else {
 						LM_WARN("unknown extra parameter: '%.*s'\n", it->s.len, it->s.s);
 						goto err;
@@ -445,8 +448,7 @@ success:
 		sock->flags |= EVI_PORT;
 	}
 	if (!(param->flags & RMQ_PARAM_USER) || !param->user.s) {
-		param->user.s = param->pass.s = RMQ_DEFAULT_UP;
-		param->user.len = param->pass.len = RMQ_DEFAULT_UP_LEN;
+		param->user = param->pass = rmq_static_holder;
 		param->flags |= RMQ_PARAM_USER|RMQ_PARAM_PASS;
 	}
 

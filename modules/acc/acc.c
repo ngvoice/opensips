@@ -103,7 +103,6 @@ extern int acc_log_facility;
 
 
 /* call created avp id */
-extern int acc_created_avp_id;
 
 static int build_core_dlg_values(struct dlg_cell *dlg,struct sip_msg *req);
 static int build_extra_dlg_values(extra_value_t* values);
@@ -595,9 +594,6 @@ int acc_db_request( struct sip_msg *rq, struct sip_msg *rpl,
 			ps = &my_ps3;
 	}
 
-	CON_PS_REFERENCE(db_handle) = ps;
-
-
 	/* multi-leg columns */
 	if (ctx) {
 		/* prevent acces for setting variable */
@@ -612,8 +608,10 @@ int acc_db_request( struct sip_msg *rq, struct sip_msg *rpl,
 
 		if ( !ctx->leg_values ) {
 			accX_unlock(&ctx->lock);
-			if (con_set_inslist(&acc_dbf,db_handle,ins_list,db_keys,n) < 0 )
+			if (con_set_inslist(&acc_dbf, db_handle, ins_list, db_keys, n) < 0) {
 				CON_RESET_INSLIST(db_handle);
+			}
+			CON_SET_CURR_PS(db_handle, ps);
 			if (acc_dbf.insert(db_handle, db_keys, db_vals, n) < 0) {
 				LM_ERR("failed to insert into %.*s table\n", acc_env.text.len, acc_env.text.s);
 				return -1;
@@ -623,8 +621,10 @@ int acc_db_request( struct sip_msg *rq, struct sip_msg *rpl,
 				for (extra=db_leg_tags, i=m; extra; extra=extra->next, i++) {
 					VAL_STR(db_vals+i)=LEG_VALUE( j, extra, ctx);
 				}
-				if (con_set_inslist(&acc_dbf,db_handle,ins_list,db_keys,n) < 0 )
+				if (con_set_inslist(&acc_dbf, db_handle, ins_list, db_keys, n) < 0) {
 					CON_RESET_INSLIST(db_handle);
+				}
+				CON_SET_CURR_PS(db_handle, ps);
 				if (acc_dbf.insert(db_handle, db_keys, db_vals, n) < 0) {
 					LM_ERR("failed to insert into %.*s table\n", acc_env.text.len, acc_env.text.s);
 					accX_unlock(&ctx->lock);
@@ -634,8 +634,10 @@ int acc_db_request( struct sip_msg *rq, struct sip_msg *rpl,
 			accX_unlock(&ctx->lock);
 		}
 	} else {
-		if (con_set_inslist(&acc_dbf,db_handle,ins_list,db_keys,m) < 0 )
-				CON_RESET_INSLIST(db_handle);
+		if (con_set_inslist(&acc_dbf, db_handle, ins_list, db_keys, m) < 0) {
+			CON_RESET_INSLIST(db_handle);
+		}
+		CON_SET_CURR_PS(db_handle, ps);
 		if (acc_dbf.insert(db_handle, db_keys, db_vals, m) < 0) {
 			LM_ERR("failed to insert into %.*s table\n", acc_env.text.len, acc_env.text.s);
 			return -1;
@@ -691,8 +693,6 @@ int acc_db_cdrs(struct dlg_cell *dlg, struct sip_msg *msg, acc_ctx_t* ctx)
 
 	total = ret + 5;
 	acc_dbf.use_table(db_handle, &table);
-	CON_PS_REFERENCE(db_handle) = &my_ps;
-
 
 	/* prevent acces for setting variable */
 	accX_lock(&ctx->lock);
@@ -701,8 +701,10 @@ int acc_db_cdrs(struct dlg_cell *dlg, struct sip_msg *msg, acc_ctx_t* ctx)
 		VAL_STR(db_vals+i) = ctx->extra_values[extra->tag_idx].value;
 
 	if (!ctx->leg_values) {
-		if (con_set_inslist(&acc_dbf,db_handle,&ins_list,db_keys,total) < 0 )
+		if (con_set_inslist(&acc_dbf, db_handle, &ins_list, db_keys, total) < 0) {
 			CON_RESET_INSLIST(db_handle);
+		}
+		CON_SET_CURR_PS(db_handle, &my_ps);
 		if (acc_dbf.insert(db_handle, db_keys, db_vals, total) < 0) {
 			LM_ERR("failed to insert into database\n");
 			accX_unlock(&ctx->lock);
@@ -717,8 +719,10 @@ int acc_db_cdrs(struct dlg_cell *dlg, struct sip_msg *msg, acc_ctx_t* ctx)
 				VAL_STR(db_vals+ret+j+1) = LEG_VALUE( i, extra, ctx);
 			}
 
-			if (con_set_inslist(&acc_dbf,db_handle,&ins_list,db_keys,total) < 0 )
+			if (con_set_inslist(&acc_dbf, db_handle, &ins_list, db_keys, total) < 0) {
 				CON_RESET_INSLIST(db_handle);
+			}
+			CON_SET_CURR_PS(db_handle, &my_ps);
 			if (acc_dbf.insert(db_handle,db_keys,db_vals,total) < 0) {
 				LM_ERR("failed inserting into database\n");
 				accX_unlock(&ctx->lock);
@@ -886,9 +890,9 @@ int acc_aaa_request( struct sip_msg *req, struct sip_msg *rpl)
 		ADD_AAA_AVPAIR( offset + i, val_arr[i].s, val_arr[i].len );
 
 	av_type = (uint32_t)_setup_time;
-	ADD_AAA_AVPAIR( offset + attr_cnt + extra_len + 1, &av_type, -1);
-	av_type = (uint32_t)_created;
 	ADD_AAA_AVPAIR( offset + attr_cnt + extra_len + 2, &av_type, -1);
+	av_type = (uint32_t)_created;
+	ADD_AAA_AVPAIR( offset + attr_cnt + extra_len + 3, &av_type, -1);
 
 	/* call-legs attributes also get inserted */
 	if (ctx) {
@@ -987,11 +991,20 @@ int acc_aaa_cdrs(struct dlg_cell *dlg, struct sip_msg *msg, acc_ctx_t* ctx)
 
 	ms_duration = TIMEVAL_MS_DIFF(start_time, ctx->bye_time);
 	duration = ceil((double)ms_duration/1000);
-	/* add duration and setup values */
+
+	/* Sip-Call-Duration (227) */
 	ADD_AAA_AVPAIR( offset + nr_leg_vals, &duration, -1);
-	ADD_AAA_AVPAIR( offset + nr_leg_vals + 1, &ms_duration, -1);
+
+	/* Sip-Call-Setuptime (228) */
 	av_type = (uint32_t)(start_time.tv_sec - ctx->created);
 	ADD_AAA_AVPAIR( offset + nr_leg_vals + 2, &av_type, -1);
+
+	/* Sip-Call-Created (229) */
+	av_type = ctx->created;
+	ADD_AAA_AVPAIR( offset + nr_leg_vals + 3, &av_type, -1);
+
+	/* Sip-Call-MSDuration (230) */
+	ADD_AAA_AVPAIR( offset + nr_leg_vals + 1, &ms_duration, -1);
 
 	/* prevent acces for setting variable */
 	accX_lock(&ctx->lock);

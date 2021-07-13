@@ -793,8 +793,7 @@ urecord_t* db_load_urecord(db_con_t* _c, udomain_t* _d, str *_aor)
 		return 0;
 	}
 
-	/* CON_PS_REFERENCE(_c) = &my_ps; - this is still dangerous with STMT */
-
+	/* CON_SET_CURR_PS(_c, &my_ps); - this is still dangerous with STMT */
 	if (ul_dbf.query(_c, keys, 0, vals, columns, use_domain ? 2:1, UL_COLS - 2,
 	                 order, &res) < 0) {
 		LM_ERR("db_query failed\n");
@@ -1040,24 +1039,24 @@ int db_timer_udomain(udomain_t* _d)
 	db_op_t  ops[2];
 	db_val_t vals[2];
 
-	if (my_ps==NULL) {
-		keys[0] = &expires_col;
-		ops[0] = "<";
-		keys[1] = &expires_col;
-		ops[1] = "!=";
+	if (ul_dbf.use_table(ul_dbh, _d->name) < 0) {
+		LM_ERR("failed to change table\n");
+		return -1;
 	}
 
 	memset(vals, 0, sizeof vals);
 
+	keys[0] = &expires_col;
+	ops[0] = "<";
 	vals[0].type = DB_INT;
 	vals[0].val.int_val = act_time + 1;
 
+	keys[1] = &expires_col;
+	ops[1] = "!=";
 	vals[1].type = DB_INT;
 	vals[1].val.int_val = 0;
 
-	CON_PS_REFERENCE(ul_dbh) = &my_ps;
-	ul_dbf.use_table(ul_dbh, _d->name);
-
+	CON_SET_CURR_PS(ul_dbh, &my_ps);
 	if (ul_dbf.delete(ul_dbh, keys, ops, vals, 2) < 0) {
 		LM_ERR("failed to delete from table %s\n",_d->name->s);
 		return -1;
@@ -1525,7 +1524,7 @@ int delete_urecord(udomain_t* _d, str* _aor, struct urecord* _r,
 	while(c) {
 		t = c;
 		c = c->next;
-		if (delete_ucontact(_r, t, skip_replication) < 0) {
+		if (delete_ucontact(_r, t, NULL, skip_replication) < 0) {
 			LM_ERR("deleting contact failed\n");
 			return -1;
 		}

@@ -49,6 +49,7 @@ struct rtpp_node {
 	unsigned		rn_weight;		/* for load balancing */
 	unsigned int		rn_recheck_ticks;
 	unsigned int		capabilities;
+	union sockaddr_union	addr;
 	struct rtpp_node	*rn_next;
 };
 
@@ -104,32 +105,18 @@ struct rtpp_set_head{
 	struct rtpp_set		*rset_last;
 };
 
-struct force_rtpp_args {
+struct rtpp_args {
     char *arg1;
     char *arg2;
     int offer;
     str body;
     str callid;
+    str from_tag;
+    str to_tag;
     struct rtpp_set *set;
     struct rtpp_node *node;
     str raddr;
 };
-
-/* used in timeout_listener_process */
-struct rtpp_notify_node {
-	int index;
-	int fd;
-	int mode;
-	char* addr;
-	struct rtpp_notify_node *next;
-};
-
-struct rtpp_notify_head {
-	int changed;
-	gen_lock_t *lock;
-	struct rtpp_notify_node *rtpp_list;
-};
-
 
 /* parameter type for set_rtp_proxy_set() */
 
@@ -152,7 +139,7 @@ struct rtpp_dtmf_event {
 	unsigned int stream;
 	str id;
 };
-void rtpproxy_raise_dtmf_event(int sender, void *p);
+int rtpproxy_raise_dtmf_event(struct rtpp_dtmf_event *dtmf);
 
 extern rw_lock_t *nh_lock;
 extern str rtpp_notify_socket;
@@ -161,15 +148,15 @@ extern struct dlg_binds dlg_api;
 extern int detect_rtp_idle;
 extern int rtpproxy_tout;
 extern struct rtpp_set_head ** rtpp_set_list;
-extern struct rtpp_notify_head * rtpp_notify_h;
-int init_rtpp_notify_list();
+int init_rtpp_notify();
+void update_rtpp_notify();
 void notification_listener_process(int rank);
 
 /* Functions from nathelper */
 struct rtpp_set *get_rtpp_set(nh_set_param_t *);
 struct rtpp_node *select_rtpp_node(struct sip_msg *, str, struct rtpp_set *, pv_spec_p, int);
 char *send_rtpp_command(struct rtpp_node *, struct rtpproxy_vcmd *, int);
-int force_rtp_proxy_body(struct sip_msg* msg, struct force_rtpp_args *args,
+int force_rtp_proxy_body(struct sip_msg* msg, struct rtpp_args *args,
                pv_spec_p var, pv_spec_p ipvar);
 
 #endif

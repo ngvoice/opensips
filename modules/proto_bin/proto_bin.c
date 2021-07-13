@@ -47,7 +47,8 @@ static int mod_init(void);
 static int proto_bin_init(struct proto_info *pi);
 static int proto_bin_init_listener(struct socket_info *si);
 static int proto_bin_send(struct socket_info* send_sock,
-		char* buf, unsigned int len, union sockaddr_union* to, int id);
+		char* buf, unsigned int len, union sockaddr_union* to,
+		unsigned int id);
 static int bin_read_req(struct tcp_connection* con, int* bytes_read);
 
 static int bin_port = 5555;
@@ -141,7 +142,8 @@ static int proto_bin_init_listener(struct socket_info *si)
 }
 
 static int proto_bin_send(struct socket_info* send_sock,
-		char* buf, unsigned int len, union sockaddr_union* to, int id)
+		char* buf, unsigned int len, union sockaddr_union* to,
+		unsigned int id)
 {
 	struct tcp_connection *c;
 	struct ip_addr ip;
@@ -153,9 +155,9 @@ static int proto_bin_send(struct socket_info* send_sock,
 	if (to){
 		su2ip_addr(&ip, to);
 		port=su_getport(to);
-		n = tcp_conn_get(id, &ip, port, PROTO_BIN, NULL, &c, &fd);
+		n = tcp_conn_get(id, &ip, port, PROTO_BIN, NULL, &c, &fd, send_sock);
 	}else if (id){
-		n = tcp_conn_get(id, 0, 0, PROTO_NONE, NULL, &c, &fd);
+		n = tcp_conn_get(id, 0, 0, PROTO_NONE, NULL, &c, &fd, NULL);
 	}else{
 		LM_CRIT("tcp_send called with null id & to\n");
 		return -1;

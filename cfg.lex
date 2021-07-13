@@ -205,6 +205,7 @@ OPEN_FD_LIMIT		"open_files_limit"
 ENABLE_ASSERTS	enable_asserts
 ABORT_ON_ASSERT	abort_on_assert
 LOGLEVEL	log_level
+LOGSTDOUT	log_stdout
 LOGSTDERROR	log_stderror
 LOGFACILITY	log_facility
 LOGNAME		log_name
@@ -250,7 +251,6 @@ TCP_WORKERS		"tcp_workers"
 TCP_ACCEPT_ALIASES	"tcp_accept_aliases"
 TCP_CONNECT_TIMEOUT	"tcp_connect_timeout"
 TCP_CON_LIFETIME    "tcp_connection_lifetime"
-TCP_LISTEN_BACKLOG   "tcp_listen_backlog"
 TCP_SOCKET_BACKLOG   "tcp_socket_backlog"
 TCP_MAX_CONNECTIONS "tcp_max_connections"
 TCP_NO_NEW_CONN_BFLAG "tcp_no_new_conn_bflag"
@@ -407,6 +407,7 @@ SPACE		[ ]
 <INITIAL>{ENABLE_ASSERTS}	{ count(); yylval.strval=yytext; return ENABLE_ASSERTS; }
 <INITIAL>{ABORT_ON_ASSERT}	{ count(); yylval.strval=yytext; return ABORT_ON_ASSERT; }
 <INITIAL>{LOGLEVEL} { count(); yylval.strval=yytext; return LOGLEVEL; }
+<INITIAL>{LOGSTDOUT}	{ yylval.strval=yytext; return LOGSTDOUT; }
 <INITIAL>{LOGSTDERROR}	{ yylval.strval=yytext; return LOGSTDERROR; }
 <INITIAL>{LOGFACILITY}	{ yylval.strval=yytext; return LOGFACILITY; }
 <INITIAL>{LOGNAME}	{ yylval.strval=yytext; return LOGNAME; }
@@ -461,8 +462,6 @@ SPACE		[ ]
 									return TCP_CONNECT_TIMEOUT; }
 <INITIAL>{TCP_CON_LIFETIME}		{ count(); yylval.strval=yytext;
 									return TCP_CON_LIFETIME; }
-<INITIAL>{TCP_LISTEN_BACKLOG}   { count(); yylval.strval=yytext;
-									return TCP_LISTEN_BACKLOG; }
 <INITIAL>{TCP_SOCKET_BACKLOG}   { count(); yylval.strval=yytext;
 									return TCP_SOCKET_BACKLOG; }
 <INITIAL>{POLL_METHOD}			{ count(); yylval.strval=yytext;

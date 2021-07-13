@@ -344,7 +344,10 @@ void check_htable(b2b_table table, int hsize)
 			dlg_next = dlg->next;
 			if(dlg->b2b_cback == 0)
 			{
-				LM_ERR("Found entity not linked to any logic\n");
+				LM_ERR("Found entity callid=%.*s ftag=%.*s ttag=%.*s "
+						"not linked to any logic\n",
+						dlg->callid.len, dlg->callid.s, dlg->tag[0].len,
+						dlg->tag[0].s, dlg->tag[1].len, dlg->tag[1].s);
 				b2b_delete_record(dlg, table, i);
 			}
 			dlg = dlg_next;
@@ -607,6 +610,7 @@ int b2b_entities_bind(b2b_api_t* api)
 static inline int mi_print_b2be_dlg(mi_item_t *resp_arr, b2b_table htable, unsigned int hsize)
 {
 	int i;
+	str param;
 	b2b_dlg_t* dlg;
 	dlg_leg_t* leg;
 	mi_item_t *arr_item, *cseq_item, *rs_item, *ct_item, *legs_arr, *leg_item;
@@ -623,8 +627,12 @@ static inline int mi_print_b2be_dlg(mi_item_t *resp_arr, b2b_table htable, unsig
 
 			if (add_mi_number(arr_item, MI_SSTR("dlg"), dlg->id) < 0)
 				goto error;
+			/* check if param is printable */
+			param = dlg->param;
+			if (!str_check_token(&param))
+				init_str(&param, "");
 			if (add_mi_string(arr_item, MI_SSTR("param"),
-				dlg->param.s, dlg->param.len) < 0)
+				param.s, param.len) < 0)
 				goto error;
 			if (add_mi_string(arr_item, MI_SSTR("mod_name"),
 				dlg->mod_name.s, dlg->mod_name.len) < 0)
